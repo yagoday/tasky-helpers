@@ -8,20 +8,23 @@ import { Input } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
+import LabelSelect from "../label/LabelSelect";
 
 const TaskForm: React.FC = () => {
   const [title, setTitle] = useState("");
   const [dueDate, setDueDate] = useState<Date | null>(null);
-  const { addTask } = useTaskStore();
+  const [selectedLabels, setSelectedLabels] = useState<string[]>([]);
+  const { addTask, labels } = useTaskStore();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!title.trim()) return;
     
-    addTask(title.trim(), dueDate);
+    addTask(title.trim(), dueDate, selectedLabels);
     setTitle("");
     setDueDate(null);
+    setSelectedLabels([]);
   };
 
   return (
@@ -42,6 +45,13 @@ const TaskForm: React.FC = () => {
         />
         
         <div className="flex items-center gap-1 pr-1">
+          {labels.length > 0 && (
+            <LabelSelect 
+              selectedLabels={selectedLabels} 
+              onChange={setSelectedLabels} 
+            />
+          )}
+          
           <Popover>
             <PopoverTrigger asChild>
               <Button

@@ -6,6 +6,13 @@ export interface Task {
   dueDate: Date | null;
   createdAt: Date;
   userId?: string;
+  labels: string[];
 }
 
 export type TaskStatus = 'all' | 'active' | 'completed';
+
+export interface Label {
+  id: string;
+  name: string;
+  color: string;
+}

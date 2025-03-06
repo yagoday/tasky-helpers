@@ -1,22 +1,28 @@
-
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { Task, TaskStatus } from "@/types/task";
+import { Task, TaskStatus, Label } from "@/types/task";
 import { createClient } from "@supabase/supabase-js";
 import { toast } from "sonner";
 
 interface TaskState {
   tasks: Task[];
+  labels: Label[];
   filter: TaskStatus;
+  labelFilter: string | null;
   isLoading: boolean;
-  addTask: (title: string, dueDate: Date | null) => Promise<void>;
+  addTask: (title: string, dueDate: Date | null, labels?: string[]) => Promise<void>;
   toggleTask: (id: string) => Promise<void>;
   updateTaskDueDate: (id: string, dueDate: Date | null) => Promise<void>;
+  updateTaskLabels: (id: string, labels: string[]) => Promise<void>;
   deleteTask: (id: string) => Promise<void>;
   clearCompleted: () => Promise<void>;
   setFilter: (filter: TaskStatus) => void;
+  setLabelFilter: (labelId: string | null) => void;
   filteredTasks: () => Task[];
   syncWithSupabase: (userId: string | undefined) => Promise<void>;
+  addLabel: (name: string, color: string) => Promise<void>;
+  updateLabel: (id: string, name: string, color: string) => Promise<void>;
+  deleteLabel: (id: string) => Promise<void>;
 }
 
 // Initialize Supabase client
@@ -29,10 +35,12 @@ export const useTaskStore = create<TaskState>()(
   persist(
     (set, get) => ({
       tasks: [],
+      labels: [],
       filter: "all",
+      labelFilter: null,
       isLoading: false,
       
-      addTask: async (title, dueDate) => {
+      addTask: async (title, dueDate, labels = []) => {
         const { data } = await supabase.auth.getUser();
         
         const newTask: Task = {
@@ -42,6 +50,7 @@ export const useTaskStore = create<TaskState>()(
           dueDate,
           createdAt: new Date(),
           userId: data.user?.id,
+          labels: labels,
         };
         
         set((state) => ({
@@ -57,6 +66,7 @@ export const useTaskStore = create<TaskState>()(
               due_date: newTask.dueDate,
               created_at: newTask.createdAt,
               user_id: data.user.id,
+              labels: newTask.labels,
             });
           } catch (error) {
             console.error("Error saving task to Supabase:", error);
@@ -84,6 +94,26 @@ export const useTaskStore = create<TaskState>()(
           } catch (error) {
             console.error("Error updating task in Supabase:", error);
             toast.error("Failed to update task on the server");
+          }
+        }
+      },
+      
+      updateTaskLabels: async (id, labels) => {
+        set((state) => ({
+          tasks: state.tasks.map((task) =>
+            task.id === id ? { ...task, labels } : task
+          ),
+        }));
+        
+        const { data } = await supabase.auth.getUser();
+        if (data.user) {
+          try {
+            await supabase.from("tasks").update({
+              labels,
+            }).eq("id", id).eq("user_id", data.user.id);
+          } catch (error) {
+            console.error("Error updating task labels in Supabase:", error);
+            toast.error("Failed to update task labels on the server");
           }
         }
       },
@@ -151,16 +181,107 @@ export const useTaskStore = create<TaskState>()(
         set({ filter });
       },
       
+      setLabelFilter: (labelId) => {
+        set({ labelFilter: labelId });
+      },
+      
       filteredTasks: () => {
-        const { tasks, filter } = get();
+        const { tasks, filter, labelFilter } = get();
         
-        switch (filter) {
-          case "active":
-            return tasks.filter((task) => !task.completed);
-          case "completed":
-            return tasks.filter((task) => task.completed);
-          default:
-            return tasks;
+        let filtered = tasks;
+        
+        if (filter === "active") {
+          filtered = filtered.filter((task) => !task.completed);
+        } else if (filter === "completed") {
+          filtered = filtered.filter((task) => task.completed);
+        }
+        
+        if (labelFilter) {
+          filtered = filtered.filter((task) => task.labels.includes(labelFilter));
+        }
+        
+        return filtered;
+      },
+      
+      addLabel: async (name, color) => {
+        const newLabel: Label = {
+          id: crypto.randomUUID(),
+          name,
+          color,
+        };
+        
+        set((state) => ({
+          labels: [...state.labels, newLabel],
+        }));
+        
+        const { data } = await supabase.auth.getUser();
+        if (data.user) {
+          try {
+            await supabase.from("labels").insert({
+              id: newLabel.id,
+              name: newLabel.name,
+              color: newLabel.color,
+              user_id: data.user.id,
+            });
+          } catch (error) {
+            console.error("Error saving label to Supabase:", error);
+            toast.error("Failed to save label to the server");
+          }
+        }
+      },
+      
+      updateLabel: async (id, name, color) => {
+        set((state) => ({
+          labels: state.labels.map((label) =>
+            label.id === id ? { ...label, name, color } : label
+          ),
+        }));
+        
+        const { data } = await supabase.auth.getUser();
+        if (data.user) {
+          try {
+            await supabase.from("labels").update({
+              name,
+              color,
+            }).eq("id", id).eq("user_id", data.user.id);
+          } catch (error) {
+            console.error("Error updating label in Supabase:", error);
+            toast.error("Failed to update label on the server");
+          }
+        }
+      },
+      
+      deleteLabel: async (id) => {
+        set((state) => ({
+          tasks: state.tasks.map((task) => ({
+            ...task,
+            labels: task.labels.filter((labelId) => labelId !== id)
+          })),
+          labels: state.labels.filter((label) => label.id !== id),
+        }));
+        
+        if (get().labelFilter === id) {
+          set({ labelFilter: null });
+        }
+        
+        const { data } = await supabase.auth.getUser();
+        if (data.user) {
+          try {
+            await supabase.from("labels").delete().eq("id", id).eq("user_id", data.user.id);
+            
+            const tasksToUpdate = get().tasks.filter(task => 
+              task.labels.includes(id)
+            );
+            
+            for (const task of tasksToUpdate) {
+              await supabase.from("tasks").update({
+                labels: task.labels,
+              }).eq("id", task.id).eq("user_id", data.user.id);
+            }
+          } catch (error) {
+            console.error("Error deleting label from Supabase:", error);
+            toast.error("Failed to delete label on the server");
+          }
         }
       },
       
@@ -170,27 +291,44 @@ export const useTaskStore = create<TaskState>()(
         set({ isLoading: true });
         
         try {
-          const { data, error } = await supabase
+          const { data: tasksData, error: tasksError } = await supabase
             .from("tasks")
             .select("*")
             .eq("user_id", userId)
             .order("created_at", { ascending: false });
             
-          if (error) throw error;
+          if (tasksError) throw tasksError;
           
-          const formattedTasks: Task[] = data.map(task => ({
+          const formattedTasks: Task[] = tasksData.map(task => ({
             id: task.id,
             title: task.title,
             completed: task.completed,
             dueDate: task.due_date ? new Date(task.due_date) : null,
             createdAt: new Date(task.created_at),
             userId: task.user_id,
+            labels: task.labels || [],
           }));
           
-          set({ tasks: formattedTasks });
+          const { data: labelsData, error: labelsError } = await supabase
+            .from("labels")
+            .select("*")
+            .eq("user_id", userId);
+            
+          if (labelsError) throw labelsError;
+          
+          const formattedLabels: Label[] = labelsData.map(label => ({
+            id: label.id,
+            name: label.name,
+            color: label.color,
+          }));
+          
+          set({ 
+            tasks: formattedTasks,
+            labels: formattedLabels
+          });
         } catch (error) {
-          console.error("Error fetching tasks from Supabase:", error);
-          toast.error("Failed to fetch your tasks");
+          console.error("Error fetching data from Supabase:", error);
+          toast.error("Failed to fetch your data");
         } finally {
           set({ isLoading: false });
         }

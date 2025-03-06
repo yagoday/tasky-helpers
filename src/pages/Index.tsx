@@ -1,14 +1,19 @@
 
-import React from "react";
+import React, { useState } from "react";
 import Layout from "@/components/layout/Layout";
 import TaskForm from "@/components/task/TaskForm";
 import TaskList from "@/components/task/TaskList";
 import TaskFilter from "@/components/task/TaskFilter";
+import LabelFilter from "@/components/label/LabelFilter";
+import LabelManager from "@/components/label/LabelManager";
 import { useTaskStore } from "@/lib/taskStore";
-import { Loader2 } from "lucide-react";
+import { Loader2, Tag } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
 
 const Index: React.FC = () => {
   const { tasks, isLoading } = useTaskStore();
+  const [showLabelManager, setShowLabelManager] = useState(false);
   
   return (
     <Layout>
@@ -26,15 +31,40 @@ const Index: React.FC = () => {
           <TaskForm />
           
           <div className="mt-6">
-            <h2 className="text-lg font-medium text-purple-800 flex items-center">
-              Your Tasks {tasks.length > 0 && <span className="text-purple-500 ml-1">({tasks.length})</span>}
-              {isLoading && (
-                <Loader2 className="ml-2 h-4 w-4 text-purple-500 animate-spin" />
-              )}
-            </h2>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <h2 className="text-lg font-medium text-purple-800 flex items-center">
+                Your Tasks {tasks.length > 0 && <span className="text-purple-500 ml-1">({tasks.length})</span>}
+                {isLoading && (
+                  <Loader2 className="ml-2 h-4 w-4 text-purple-500 animate-spin" />
+                )}
+              </h2>
+              
+              <div className="flex items-center gap-2">
+                <LabelFilter />
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="ml-auto flex items-center gap-1.5 h-8"
+                  onClick={() => setShowLabelManager(!showLabelManager)}
+                >
+                  <Tag className="h-3.5 w-3.5" />
+                  <span>Manage Labels</span>
+                </Button>
+              </div>
+            </div>
             
-            <TaskList />
-            {tasks.length > 0 && <TaskFilter />}
+            {/* Label manager */}
+            {showLabelManager && (
+              <div className="mt-4 p-4 border border-purple-100 rounded-lg bg-white/70">
+                <LabelManager />
+              </div>
+            )}
+            
+            {/* Tasks */}
+            <div className="mt-4">
+              <TaskList />
+              {tasks.length > 0 && <TaskFilter />}
+            </div>
           </div>
         </div>
       </div>

@@ -1,13 +1,14 @@
 
 import React, { useState } from "react";
 import { format } from "date-fns";
-import { Check, Calendar, Trash2, X } from "lucide-react";
+import { Check, Calendar, Trash2, X, Tag } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Task } from "@/types/task";
 import { useTaskStore } from "@/lib/taskStore";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
+import LabelSelect from "../label/LabelSelect";
 
 interface TaskItemProps {
   task: Task;
@@ -15,11 +16,13 @@ interface TaskItemProps {
 }
 
 const TaskItem: React.FC<TaskItemProps> = ({ task, index }) => {
-  const { toggleTask, updateTaskDueDate, deleteTask } = useTaskStore();
+  const { toggleTask, updateTaskDueDate, updateTaskLabels, deleteTask, labels } = useTaskStore();
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   // Animation delay based on index for staggered entrance
   const animationDelay = `${index * 50}ms`;
+
+  const taskLabels = labels.filter(label => task.labels.includes(label.id));
 
   return (
     <div 
@@ -53,6 +56,28 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, index }) => {
           </h3>
         </div>
 
+        {/* Labels */}
+        {taskLabels.length > 0 && (
+          <div className="mt-2 flex flex-wrap gap-1.5">
+            {taskLabels.map(label => (
+              <div
+                key={label.id}
+                className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs"
+                style={{ 
+                  backgroundColor: `${label.color}20`, 
+                  color: label.color 
+                }}
+              >
+                <div 
+                  className="w-2 h-2 rounded-full" 
+                  style={{ backgroundColor: label.color }}
+                />
+                {label.name}
+              </div>
+            ))}
+          </div>
+        )}
+
         {/* Due date */}
         {task.dueDate && (
           <div 
@@ -69,6 +94,14 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, index }) => {
 
       {/* Actions */}
       <div className="flex-none flex items-center gap-1.5 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
+        {/* Label picker */}
+        {labels.length > 0 && (
+          <LabelSelect
+            selectedLabels={task.labels}
+            onChange={(labelIds) => updateTaskLabels(task.id, labelIds)}
+          />
+        )}
+        
         {/* Due date picker */}
         <Popover>
           <PopoverTrigger asChild>
