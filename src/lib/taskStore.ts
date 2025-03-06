@@ -1,3 +1,4 @@
+
 import { create } from "zustand";
 import { Task, TaskStatus, Label } from "@/types/task";
 import { toast } from "sonner";
@@ -130,7 +131,7 @@ export const useTaskStore = create<TaskState>((set, get) => ({
             due_date: newTask.dueDate,
             created_at: newTask.createdAt,
             user_id: newTask.userId,
-            labels: newTask.labels
+            labels_string: newTask.labels // Use labels_string instead of labels
           }
         ]);
 
@@ -198,7 +199,7 @@ export const useTaskStore = create<TaskState>((set, get) => ({
       // Try to update in Supabase
       const { error } = await supabase
         .from('tasks')
-        .update({ labels })
+        .update({ labels_string: labels }) // Use labels_string instead of labels
         .eq('id', id);
         
       if (error) {
@@ -364,7 +365,7 @@ export const useTaskStore = create<TaskState>((set, get) => ({
           dueDate: task.due_date ? new Date(task.due_date) : null,
           createdAt: new Date(task.created_at),
           userId: task.user_id,
-          labels: task.labels || [],
+          labels: task.labels_string || [], // Use labels_string instead of labels
         })) || [];
 
         // Only update if we got data
