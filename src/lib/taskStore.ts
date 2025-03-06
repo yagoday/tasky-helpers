@@ -1,3 +1,4 @@
+
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import { Task, TaskStatus, Label } from "@/types/task";
@@ -82,7 +83,8 @@ const createTaskStore = (useLocalStorage = true) => {
     },
   };
 
-  const baseStore = {
+  // Create the base store implementation that can be used with or without persistence
+  const createBaseStore = (set: any, get: any) => ({
     tasks: [] as Task[],
     labels: [] as Label[],
     filter: "all" as TaskStatus,
@@ -170,7 +172,7 @@ const createTaskStore = (useLocalStorage = true) => {
         labels: labels,
       };
       
-      set((state) => ({
+      set((state: TaskState) => ({
         tasks: [newTask, ...state.tasks],
       }));
       
@@ -193,10 +195,10 @@ const createTaskStore = (useLocalStorage = true) => {
     },
     
     toggleTask: async (id: string) => {
-      const task = get().tasks.find(task => task.id === id);
+      const task = get().tasks.find((task: Task) => task.id === id);
       if (!task) return;
       
-      set((state) => ({
+      set((state: TaskState) => ({
         tasks: state.tasks.map((task) =>
           task.id === id ? { ...task, completed: !task.completed } : task
         ),
@@ -216,7 +218,7 @@ const createTaskStore = (useLocalStorage = true) => {
     },
     
     updateTaskLabels: async (id: string, labels: string[]) => {
-      set((state) => ({
+      set((state: TaskState) => ({
         tasks: state.tasks.map((task) =>
           task.id === id ? { ...task, labels } : task
         ),
@@ -236,7 +238,7 @@ const createTaskStore = (useLocalStorage = true) => {
     },
     
     updateTaskDueDate: async (id: string, dueDate: Date | null) => {
-      set((state) => ({
+      set((state: TaskState) => ({
         tasks: state.tasks.map((task) =>
           task.id === id ? { ...task, dueDate } : task
         ),
@@ -256,7 +258,7 @@ const createTaskStore = (useLocalStorage = true) => {
     },
     
     deleteTask: async (id: string) => {
-      set((state) => ({
+      set((state: TaskState) => ({
         tasks: state.tasks.filter((task) => task.id !== id),
       }));
       
@@ -273,10 +275,10 @@ const createTaskStore = (useLocalStorage = true) => {
     
     clearCompleted: async () => {
       const completedTaskIds = get().tasks
-        .filter(task => task.completed)
-        .map(task => task.id);
+        .filter((task: Task) => task.completed)
+        .map((task: Task) => task.id);
       
-      set((state) => ({
+      set((state: TaskState) => ({
         tasks: state.tasks.filter((task) => !task.completed),
       }));
       
@@ -308,13 +310,13 @@ const createTaskStore = (useLocalStorage = true) => {
       let filtered = tasks;
       
       if (filter === "active") {
-        filtered = filtered.filter((task) => !task.completed);
+        filtered = filtered.filter((task: Task) => !task.completed);
       } else if (filter === "completed") {
-        filtered = filtered.filter((task) => task.completed);
+        filtered = filtered.filter((task: Task) => task.completed);
       }
       
       if (labelFilter) {
-        filtered = filtered.filter((task) => task.labels.includes(labelFilter));
+        filtered = filtered.filter((task: Task) => task.labels.includes(labelFilter));
       }
       
       return filtered;
@@ -327,7 +329,7 @@ const createTaskStore = (useLocalStorage = true) => {
         color,
       };
       
-      set((state) => ({
+      set((state: TaskState) => ({
         labels: [...state.labels, newLabel],
       }));
       
@@ -348,7 +350,7 @@ const createTaskStore = (useLocalStorage = true) => {
     },
     
     updateLabel: async (id: string, name: string, color: string) => {
-      set((state) => ({
+      set((state: TaskState) => ({
         labels: state.labels.map((label) =>
           label.id === id ? { ...label, name, color } : label
         ),
@@ -369,7 +371,7 @@ const createTaskStore = (useLocalStorage = true) => {
     },
     
     deleteLabel: async (id: string) => {
-      set((state) => ({
+      set((state: TaskState) => ({
         tasks: state.tasks.map((task) => ({
           ...task,
           labels: task.labels.filter((labelId) => labelId !== id)
@@ -386,7 +388,7 @@ const createTaskStore = (useLocalStorage = true) => {
         try {
           await supabase.from("labels").delete().eq("id", id).eq("user_id", data.user.id);
           
-          const tasksToUpdate = get().tasks.filter(task => 
+          const tasksToUpdate = get().tasks.filter((task: Task) => 
             task.labels.includes(id)
           );
           
@@ -470,20 +472,16 @@ const createTaskStore = (useLocalStorage = true) => {
         set({ isLoading: false });
       }
     },
-  };
+  });
 
   if (!canUseStorage) {
     // Return a non-persisted store
-    return create<TaskState>()((set, get) => ({
-      ...baseStore,
-    }));
+    return create<TaskState>()((set, get) => createBaseStore(set, get));
   } else {
     // Return a persisted store with the safe storage
     return create<TaskState>()(
       persist(
-        (set, get) => ({
-          ...baseStore,
-        }),
+        (set, get) => createBaseStore(set, get),
         {
           name: "task-store",
           storage: createJSONStorage(() => safeStorage),

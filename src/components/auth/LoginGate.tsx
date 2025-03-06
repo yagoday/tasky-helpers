@@ -4,6 +4,7 @@ import { useAuth } from "@/lib/useAuth";
 import AuthModal from "./AuthModal";
 import { Loader2 } from "lucide-react";
 import { useTaskStore } from "@/lib/taskStore";
+import { toast } from "sonner";
 
 interface LoginGateProps {
   children: React.ReactNode;
@@ -13,23 +14,33 @@ const LoginGate: React.FC<LoginGateProps> = ({ children }) => {
   const { user, isLoading } = useAuth();
   const [showAuthModal, setShowAuthModal] = useState(false);
   const { syncWithSupabase } = useTaskStore();
+  const [syncAttempted, setSyncAttempted] = useState(false);
   
   useEffect(() => {
-    // If user is not loading and not logged in, show the auth modal
-    if (!isLoading && !user) {
-      setShowAuthModal(true);
-    } else if (user) {
-      setShowAuthModal(false);
-      
-      // Try to sync with Supabase as soon as user is authenticated
-      // This ensures we have data even if local storage fails
-      try {
-        syncWithSupabase(user.id);
-      } catch (error) {
-        console.error("Failed to sync with Supabase in LoginGate:", error);
+    if (!isLoading) {
+      if (!user) {
+        setShowAuthModal(true);
+      } else {
+        setShowAuthModal(false);
+        
+        // Only try to sync once when user is authenticated
+        if (!syncAttempted) {
+          setSyncAttempted(true);
+          
+          // Try to sync with Supabase as soon as user is authenticated
+          try {
+            syncWithSupabase(user.id)
+              .catch(error => {
+                console.error("Error syncing with Supabase:", error);
+                toast.error("Failed to sync your data");
+              });
+          } catch (error) {
+            console.error("Failed to sync with Supabase in LoginGate:", error);
+          }
+        }
       }
     }
-  }, [user, isLoading, syncWithSupabase]);
+  }, [user, isLoading, syncWithSupabase, syncAttempted]);
 
   if (isLoading) {
     return (
