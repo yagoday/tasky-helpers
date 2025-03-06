@@ -27,8 +27,8 @@ const TaskFilter: React.FC = () => {
             className={cn(
               "rounded-lg h-9 px-3 text-sm font-medium transition-all",
               filter === filterOption.value
-                ? "bg-secondary text-foreground"
-                : "text-muted-foreground hover:bg-secondary/50"
+                ? "bg-purple-200 text-purple-800"
+                : "text-muted-foreground hover:bg-purple-100"
             )}
             onClick={() => setFilter(filterOption.value)}
           >

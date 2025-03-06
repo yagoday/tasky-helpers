@@ -27,11 +27,11 @@ const TaskForm: React.FC = () => {
   return (
     <form 
       onSubmit={handleSubmit} 
-      className="relative rounded-xl border border-border bg-card p-1 shadow-sm transition-all duration-300 focus-within:border-primary/50 focus-within:shadow-md"
+      className="relative rounded-xl border border-purple-200 bg-white/80 backdrop-blur-sm p-1 shadow-sm transition-all duration-300 focus-within:border-purple-400 focus-within:shadow-md"
     >
       <div className="flex items-center gap-2">
         <span className="flex-none pl-3">
-          <Plus className="h-5 w-5 text-muted-foreground" />
+          <Plus className="h-5 w-5 text-purple-500" />
         </span>
         
         <Input
@@ -50,7 +50,7 @@ const TaskForm: React.FC = () => {
                 size="icon"
                 className={cn(
                   "h-9 w-9 rounded-lg",
-                  dueDate && "text-primary"
+                  dueDate && "text-purple-600"
                 )}
               >
                 <CalendarIcon className="h-5 w-5" />
