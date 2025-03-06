@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import Layout from "@/components/layout/Layout";
 import TaskForm from "@/components/task/TaskForm";
@@ -11,12 +10,12 @@ import { Loader2, Tag } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
-import { useMobile } from "@/hooks/use-mobile";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const Index: React.FC = () => {
   const { tasks, isLoading } = useTaskStore();
   const [showLabelManager, setShowLabelManager] = useState(false);
-  const isMobile = useMobile();
+  const isMobile = useIsMobile();
   
   return (
     <Layout>
@@ -73,14 +72,12 @@ const Index: React.FC = () => {
               </div>
             </div>
             
-            {/* Label manager for desktop */}
             {!isMobile && showLabelManager && (
               <div className="mt-4 p-4 border border-purple-100 rounded-lg bg-white/70">
                 <LabelManager />
               </div>
             )}
             
-            {/* Tasks */}
             <div className="mt-4">
               <TaskList />
               {tasks.length > 0 && <TaskFilter />}
