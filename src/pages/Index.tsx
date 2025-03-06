@@ -10,10 +10,13 @@ import { useTaskStore } from "@/lib/taskStore";
 import { Loader2, Tag } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import { useMobile } from "@/hooks/use-mobile";
 
 const Index: React.FC = () => {
   const { tasks, isLoading } = useTaskStore();
   const [showLabelManager, setShowLabelManager] = useState(false);
+  const isMobile = useMobile();
   
   return (
     <Layout>
@@ -41,20 +44,37 @@ const Index: React.FC = () => {
               
               <div className="flex items-center gap-2">
                 <LabelFilter />
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="ml-auto flex items-center gap-1.5 h-8"
-                  onClick={() => setShowLabelManager(!showLabelManager)}
-                >
-                  <Tag className="h-3.5 w-3.5" />
-                  <span>Manage Labels</span>
-                </Button>
+                {isMobile ? (
+                  <Dialog>
+                    <DialogTrigger asChild>
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        className="ml-auto flex items-center h-8 w-8"
+                      >
+                        <Tag className="h-3.5 w-3.5" />
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="sm:max-w-[425px]">
+                      <LabelManager />
+                    </DialogContent>
+                  </Dialog>
+                ) : (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="ml-auto flex items-center gap-1.5 h-8"
+                    onClick={() => setShowLabelManager(!showLabelManager)}
+                  >
+                    <Tag className="h-3.5 w-3.5" />
+                    <span>Manage Labels</span>
+                  </Button>
+                )}
               </div>
             </div>
             
-            {/* Label manager */}
-            {showLabelManager && (
+            {/* Label manager for desktop */}
+            {!isMobile && showLabelManager && (
               <div className="mt-4 p-4 border border-purple-100 rounded-lg bg-white/70">
                 <LabelManager />
               </div>
