@@ -1,3 +1,4 @@
+
 import { create } from "zustand";
 import { Task, TaskStatus, Label } from "@/types/task";
 import { toast } from "sonner";
@@ -101,13 +102,17 @@ export const useTaskStore = create<TaskState>((set, get) => ({
     try {
       set({ isLoading: true });
       
+      // Get current user id
+      const { data: userData } = await supabase.auth.getUser();
+      const userId = userData?.user?.id || crypto.randomUUID();
+      
       const newTask: Task = {
         id: crypto.randomUUID(),
         title,
         completed: false,
         dueDate,
         createdAt: new Date(),
-        userId: supabase.auth.getUser().then(({ data }) => data.user?.id) || crypto.randomUUID(),
+        userId: userId,
         labels: labels,
       };
 
@@ -385,6 +390,10 @@ export const useTaskStore = create<TaskState>((set, get) => ({
     try {
       set({ isLoading: true });
       
+      // Get current user id
+      const { data: userData } = await supabase.auth.getUser();
+      const userId = userData?.user?.id || crypto.randomUUID();
+      
       const newLabel: Label = {
         id: crypto.randomUUID(),
         name,
@@ -398,7 +407,7 @@ export const useTaskStore = create<TaskState>((set, get) => ({
             id: newLabel.id,
             name: newLabel.name,
             color: newLabel.color,
-            user_id: "123e4567-e89b-12d3-a456-426614174000"
+            user_id: userId
           }
         ]);
 
