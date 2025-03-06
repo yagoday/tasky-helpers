@@ -7,14 +7,14 @@ interface LoginGateProps {
   children: React.ReactNode;
 }
 
-// Completely bypassing all authentication to focus on database connection
+// Using proper UUID for mock user
 const LoginGate: React.FC<LoginGateProps> = ({ children }) => {
   const { syncWithSupabase } = useTaskStore();
   
   useEffect(() => {
-    // Initialize with mock data in offline mode
-    console.log("Authentication completely bypassed - running in offline mode");
-    syncWithSupabase("mock-user-id");
+    // Initialize with mock data using proper UUID
+    console.log("Authentication bypassed - running in offline mode");
+    syncWithSupabase("123e4567-e89b-12d3-a456-426614174000");
   }, [syncWithSupabase]);
   
   return (

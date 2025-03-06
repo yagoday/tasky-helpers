@@ -1,4 +1,3 @@
-
 import { create } from "zustand";
 import { Task, TaskStatus, Label } from "@/types/task";
 import { toast } from "sonner";
@@ -27,7 +26,7 @@ interface TaskState {
   initializeTables: (userId: string) => Promise<void>;
 }
 
-// Initial demo data
+// Initial demo data with proper UUID
 const INITIAL_TASKS: Task[] = [
   {
     id: "1",
@@ -35,7 +34,7 @@ const INITIAL_TASKS: Task[] = [
     completed: false,
     dueDate: new Date(),
     createdAt: new Date(),
-    userId: "mock-user-id",
+    userId: "123e4567-e89b-12d3-a456-426614174000",
     labels: [],
   },
   {
@@ -44,7 +43,7 @@ const INITIAL_TASKS: Task[] = [
     completed: true,
     dueDate: null,
     createdAt: new Date(),
-    userId: "mock-user-id",
+    userId: "123e4567-e89b-12d3-a456-426614174000",
     labels: [],
   }
 ];
@@ -116,7 +115,7 @@ export const useTaskStore = create<TaskState>((set, get) => ({
         completed: false,
         dueDate,
         createdAt: new Date(),
-        userId: "mock-user-id",
+        userId: "123e4567-e89b-12d3-a456-426614174000",
         labels: labels,
       };
 
@@ -338,7 +337,7 @@ export const useTaskStore = create<TaskState>((set, get) => ({
     return filtered;
   },
 
-  syncWithSupabase: async (userId: string = "mock-user-id") => {
+  syncWithSupabase: async (userId: string = "123e4567-e89b-12d3-a456-426614174000") => {
     try {
       console.log("Syncing with Supabase for userId:", userId);
       set({ isLoading: true });
@@ -423,7 +422,7 @@ export const useTaskStore = create<TaskState>((set, get) => ({
             id: newLabel.id,
             name: newLabel.name,
             color: newLabel.color,
-            user_id: "mock-user-id"
+            user_id: "123e4567-e89b-12d3-a456-426614174000"
           }
         ]);
 

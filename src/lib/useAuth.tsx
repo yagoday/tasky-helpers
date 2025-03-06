@@ -19,9 +19,9 @@ export const supabase = createClient(
   import.meta.env.VITE_SUPABASE_ANON_KEY || ""
 );
 
-// Create a mock user for development without authentication
+// Create a mock user with proper UUID for development without authentication
 const mockUser = {
-  id: "mock-user-id",
+  id: "123e4567-e89b-12d3-a456-426614174000", // Valid UUID format
   email: "mock-user@example.com",
 } as User;
 
