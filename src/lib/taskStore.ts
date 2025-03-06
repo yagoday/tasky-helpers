@@ -1,8 +1,8 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { Task, TaskStatus, Label } from "@/types/task";
-import { createClient } from "@supabase/supabase-js";
 import { toast } from "sonner";
+import { supabase } from "./useAuth";
 
 interface TaskState {
   tasks: Task[];
@@ -24,12 +24,6 @@ interface TaskState {
   updateLabel: (id: string, name: string, color: string) => Promise<void>;
   deleteLabel: (id: string) => Promise<void>;
 }
-
-// Initialize Supabase client
-const supabase = createClient(
-  import.meta.env.VITE_SUPABASE_URL || "",
-  import.meta.env.VITE_SUPABASE_ANON_KEY || ""
-);
 
 export const useTaskStore = create<TaskState>()(
   persist(
@@ -286,18 +280,26 @@ export const useTaskStore = create<TaskState>()(
       },
       
       syncWithSupabase: async (userId) => {
-        if (!userId) return;
+        if (!userId) {
+          console.log("No user ID provided for syncing");
+          return;
+        }
         
+        console.log("Syncing with Supabase for user ID:", userId);
         set({ isLoading: true });
         
         try {
           const { data: tasksData, error: tasksError } = await supabase
             .from("tasks")
             .select("*")
-            .eq("user_id", userId)
-            .order("created_at", { ascending: false });
+            .eq("user_id", userId);
             
-          if (tasksError) throw tasksError;
+          if (tasksError) {
+            console.error("Supabase tasks fetch error:", tasksError);
+            throw tasksError;
+          }
+          
+          console.log("Fetched tasks data:", tasksData);
           
           const formattedTasks: Task[] = tasksData.map(task => ({
             id: task.id,
@@ -314,7 +316,12 @@ export const useTaskStore = create<TaskState>()(
             .select("*")
             .eq("user_id", userId);
             
-          if (labelsError) throw labelsError;
+          if (labelsError) {
+            console.error("Supabase labels fetch error:", labelsError);
+            throw labelsError;
+          }
+          
+          console.log("Fetched labels data:", labelsData);
           
           const formattedLabels: Label[] = labelsData.map(label => ({
             id: label.id,

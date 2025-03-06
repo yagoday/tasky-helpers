@@ -14,11 +14,20 @@ import { useEffect } from "react";
 const HandleAuthRedirect = () => {
   useEffect(() => {
     console.log("Handling auth callback redirect - this should be triggered after Google login");
+    console.log("Current URL:", window.location.href);
     
-    // We could parse the URL hash here if needed
-    const hashParams = new URLSearchParams(window.location.hash.substring(1));
-    if (hashParams.has('access_token')) {
-      console.log("Access token found in URL hash, authentication successful");
+    // Parse the URL hash if present
+    if (window.location.hash) {
+      console.log("Hash detected in URL:", window.location.hash);
+      const hashParams = new URLSearchParams(window.location.hash.substring(1));
+      if (hashParams.has('access_token')) {
+        console.log("Access token found in URL hash, authentication successful");
+      }
+    }
+    
+    // If there are query parameters, log them too
+    if (window.location.search) {
+      console.log("Query params detected:", window.location.search);
     }
   }, []);
   
