@@ -10,6 +10,7 @@ interface TaskState {
   filter: TaskStatus;
   labelFilter: string | null;
   isLoading: boolean;
+  tablesInitialized: boolean;
   addTask: (title: string, dueDate: Date | null, labels?: string[]) => Promise<void>;
   toggleTask: (id: string) => Promise<void>;
   updateTaskDueDate: (id: string, dueDate: Date | null) => Promise<void>;
@@ -23,6 +24,7 @@ interface TaskState {
   addLabel: (name: string, color: string) => Promise<void>;
   updateLabel: (id: string, name: string, color: string) => Promise<void>;
   deleteLabel: (id: string) => Promise<void>;
+  initializeTables: (userId: string) => Promise<void>;
 }
 
 export const useTaskStore = create<TaskState>()(
@@ -33,6 +35,54 @@ export const useTaskStore = create<TaskState>()(
       filter: "all",
       labelFilter: null,
       isLoading: false,
+      tablesInitialized: false,
+      
+      initializeTables: async (userId) => {
+        if (get().tablesInitialized) return;
+        
+        console.log("Checking and initializing tables for user:", userId);
+        set({ isLoading: true });
+        
+        try {
+          // Check if tasks table exists
+          const { error: tasksCheckError } = await supabase
+            .from("tasks")
+            .select("count()")
+            .limit(1);
+            
+          // Initialize tasks table if it doesn't exist
+          if (tasksCheckError && tasksCheckError.code === "42P01") {
+            console.log("Tasks table doesn't exist. Please create it in Supabase.");
+            toast.error("The tasks table doesn't exist in your database", {
+              description: "You need to create it in the Supabase dashboard.",
+              duration: 6000,
+            });
+          }
+          
+          // Check if labels table exists
+          const { error: labelsCheckError } = await supabase
+            .from("labels")
+            .select("count()")
+            .limit(1);
+            
+          // Initialize labels table if it doesn't exist
+          if (labelsCheckError && labelsCheckError.code === "42P01") {
+            console.log("Labels table doesn't exist. Please create it in Supabase.");
+            toast.error("The labels table doesn't exist in your database", {
+              description: "You need to create it in the Supabase dashboard.",
+              duration: 6000,
+            });
+          }
+          
+          // Mark as initialized even if tables don't exist yet
+          // This prevents repeated error messages
+          set({ tablesInitialized: true });
+        } catch (error) {
+          console.error("Error checking tables:", error);
+        } finally {
+          set({ isLoading: false });
+        }
+      },
       
       addTask: async (title, dueDate, labels = []) => {
         const { data } = await supabase.auth.getUser();
@@ -285,6 +335,8 @@ export const useTaskStore = create<TaskState>()(
           return;
         }
         
+        await get().initializeTables(userId);
+        
         console.log("Syncing with Supabase for user ID:", userId);
         set({ isLoading: true });
         
@@ -295,21 +347,25 @@ export const useTaskStore = create<TaskState>()(
             .eq("user_id", userId);
             
           if (tasksError) {
-            console.error("Supabase tasks fetch error:", tasksError);
-            throw tasksError;
+            if (tasksError.code !== "42P01") {
+              console.error("Supabase tasks fetch error:", tasksError);
+              toast.error("Failed to fetch tasks");
+            }
+          } else {
+            console.log("Fetched tasks data:", tasksData);
+            
+            const formattedTasks: Task[] = tasksData.map(task => ({
+              id: task.id,
+              title: task.title,
+              completed: task.completed,
+              dueDate: task.due_date ? new Date(task.due_date) : null,
+              createdAt: new Date(task.created_at),
+              userId: task.user_id,
+              labels: task.labels || [],
+            }));
+            
+            set({ tasks: formattedTasks });
           }
-          
-          console.log("Fetched tasks data:", tasksData);
-          
-          const formattedTasks: Task[] = tasksData.map(task => ({
-            id: task.id,
-            title: task.title,
-            completed: task.completed,
-            dueDate: task.due_date ? new Date(task.due_date) : null,
-            createdAt: new Date(task.created_at),
-            userId: task.user_id,
-            labels: task.labels || [],
-          }));
           
           const { data: labelsData, error: labelsError } = await supabase
             .from("labels")
@@ -317,22 +373,21 @@ export const useTaskStore = create<TaskState>()(
             .eq("user_id", userId);
             
           if (labelsError) {
-            console.error("Supabase labels fetch error:", labelsError);
-            throw labelsError;
+            if (labelsError.code !== "42P01") {
+              console.error("Supabase labels fetch error:", labelsError);
+              toast.error("Failed to fetch labels");
+            }
+          } else {
+            console.log("Fetched labels data:", labelsData);
+            
+            const formattedLabels: Label[] = labelsData.map(label => ({
+              id: label.id,
+              name: label.name,
+              color: label.color,
+            }));
+            
+            set({ labels: formattedLabels });
           }
-          
-          console.log("Fetched labels data:", labelsData);
-          
-          const formattedLabels: Label[] = labelsData.map(label => ({
-            id: label.id,
-            name: label.name,
-            color: label.color,
-          }));
-          
-          set({ 
-            tasks: formattedTasks,
-            labels: formattedLabels
-          });
         } catch (error) {
           console.error("Error fetching data from Supabase:", error);
           toast.error("Failed to fetch your data");

@@ -3,10 +3,9 @@ import React from "react";
 import { User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/useAuth";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import AuthModal from "@/components/auth/AuthModal";
 import { useTaskStore } from "@/lib/taskStore";
-import { useEffect } from "react";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -15,13 +14,16 @@ interface LayoutProps {
 const Layout: React.FC<LayoutProps> = ({ children }) => {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const { user } = useAuth();
-  const { syncWithSupabase } = useTaskStore();
+  const { syncWithSupabase, initializeTables } = useTaskStore();
   
   useEffect(() => {
     if (user) {
+      // First initialize tables to check if they exist
+      initializeTables(user.id);
+      // Then sync data
       syncWithSupabase(user.id);
     }
-  }, [user, syncWithSupabase]);
+  }, [user, syncWithSupabase, initializeTables]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-purple-100 to-purple-200 antialiased">
