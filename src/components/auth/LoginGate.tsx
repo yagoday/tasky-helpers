@@ -2,20 +2,24 @@
 import React from "react";
 import { useTaskStore } from "@/lib/taskStore";
 import { useEffect } from "react";
+import { useAuth } from "@/lib/useAuth";
 
 interface LoginGateProps {
   children: React.ReactNode;
 }
 
-// Using proper UUID for mock user
 const LoginGate: React.FC<LoginGateProps> = ({ children }) => {
   const { syncWithSupabase } = useTaskStore();
+  const { user } = useAuth();
   
   useEffect(() => {
-    // Initialize with mock data using proper UUID
-    console.log("Authentication bypassed - running in offline mode");
-    syncWithSupabase("123e4567-e89b-12d3-a456-426614174000");
-  }, [syncWithSupabase]);
+    if (user) {
+      console.log("Syncing with Supabase for user:", user.id);
+      syncWithSupabase(user.id);
+    } else {
+      console.log("No authenticated user found");
+    }
+  }, [user, syncWithSupabase]);
   
   return (
     <>
