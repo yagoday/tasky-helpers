@@ -4,14 +4,12 @@ import Layout from "@/components/layout/Layout";
 import TaskForm from "@/components/task/TaskForm";
 import TaskList from "@/components/task/TaskList";
 import TaskFilter from "@/components/task/TaskFilter";
-import LabelFilter from "@/components/label/LabelFilter";
 import LabelManager from "@/components/label/LabelManager";
 import { useTaskStore } from "@/lib/taskStore";
 import { Loader2, Tag } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { cn } from "@/lib/utils";
 
 const Index: React.FC = () => {
   const { tasks, isLoading } = useTaskStore();
@@ -42,8 +40,7 @@ const Index: React.FC = () => {
                 )}
               </h2>
               
-              <div className="flex items-center gap-2">
-                <LabelFilter />
+              <div className="flex items-center">
                 {isMobile ? (
                   <Dialog>
                     <DialogTrigger asChild>
