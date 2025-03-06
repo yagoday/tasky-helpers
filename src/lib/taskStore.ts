@@ -33,7 +33,7 @@ export const useTaskStore = create<TaskState>()(
       isLoading: false,
       
       addTask: async (title, dueDate) => {
-        const { user } = await supabase.auth.getUser();
+        const { data } = await supabase.auth.getUser();
         
         const newTask: Task = {
           id: crypto.randomUUID(),
@@ -41,14 +41,14 @@ export const useTaskStore = create<TaskState>()(
           completed: false,
           dueDate,
           createdAt: new Date(),
-          userId: user.data.user?.id,
+          userId: data.user?.id,
         };
         
         set((state) => ({
           tasks: [newTask, ...state.tasks],
         }));
         
-        if (user.data.user) {
+        if (data.user) {
           try {
             await supabase.from("tasks").insert({
               id: newTask.id,
@@ -56,7 +56,7 @@ export const useTaskStore = create<TaskState>()(
               completed: newTask.completed,
               due_date: newTask.dueDate,
               created_at: newTask.createdAt,
-              user_id: user.data.user.id,
+              user_id: data.user.id,
             });
           } catch (error) {
             console.error("Error saving task to Supabase:", error);
@@ -75,12 +75,12 @@ export const useTaskStore = create<TaskState>()(
           ),
         }));
         
-        const { user } = await supabase.auth.getUser();
-        if (user.data.user) {
+        const { data } = await supabase.auth.getUser();
+        if (data.user) {
           try {
             await supabase.from("tasks").update({
               completed: !task.completed,
-            }).eq("id", id).eq("user_id", user.data.user.id);
+            }).eq("id", id).eq("user_id", data.user.id);
           } catch (error) {
             console.error("Error updating task in Supabase:", error);
             toast.error("Failed to update task on the server");
@@ -95,12 +95,12 @@ export const useTaskStore = create<TaskState>()(
           ),
         }));
         
-        const { user } = await supabase.auth.getUser();
-        if (user.data.user) {
+        const { data } = await supabase.auth.getUser();
+        if (data.user) {
           try {
             await supabase.from("tasks").update({
               due_date: dueDate,
-            }).eq("id", id).eq("user_id", user.data.user.id);
+            }).eq("id", id).eq("user_id", data.user.id);
           } catch (error) {
             console.error("Error updating task due date in Supabase:", error);
             toast.error("Failed to update task due date on the server");
@@ -113,10 +113,10 @@ export const useTaskStore = create<TaskState>()(
           tasks: state.tasks.filter((task) => task.id !== id),
         }));
         
-        const { user } = await supabase.auth.getUser();
-        if (user.data.user) {
+        const { data } = await supabase.auth.getUser();
+        if (data.user) {
           try {
-            await supabase.from("tasks").delete().eq("id", id).eq("user_id", user.data.user.id);
+            await supabase.from("tasks").delete().eq("id", id).eq("user_id", data.user.id);
           } catch (error) {
             console.error("Error deleting task in Supabase:", error);
             toast.error("Failed to delete task on the server");
@@ -133,13 +133,13 @@ export const useTaskStore = create<TaskState>()(
           tasks: state.tasks.filter((task) => !task.completed),
         }));
         
-        const { user } = await supabase.auth.getUser();
-        if (user.data.user && completedTaskIds.length > 0) {
+        const { data } = await supabase.auth.getUser();
+        if (data.user && completedTaskIds.length > 0) {
           try {
             await supabase.from("tasks")
               .delete()
               .in("id", completedTaskIds)
-              .eq("user_id", user.data.user.id);
+              .eq("user_id", data.user.id);
           } catch (error) {
             console.error("Error clearing completed tasks in Supabase:", error);
             toast.error("Failed to clear completed tasks on the server");
