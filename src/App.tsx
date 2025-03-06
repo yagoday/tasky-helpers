@@ -13,7 +13,13 @@ import { useEffect } from "react";
 // Create a new 404 handling component for authentication redirects
 const HandleAuthRedirect = () => {
   useEffect(() => {
-    console.log("Redirecting from HandleAuthRedirect component");
+    console.log("Handling auth callback redirect - this should be triggered after Google login");
+    
+    // We could parse the URL hash here if needed
+    const hashParams = new URLSearchParams(window.location.hash.substring(1));
+    if (hashParams.has('access_token')) {
+      console.log("Access token found in URL hash, authentication successful");
+    }
   }, []);
   
   return <Navigate to="/" replace />;

@@ -1,4 +1,3 @@
-
 import { useState, createContext, useContext, useEffect } from "react";
 import { createClient, SupabaseClient, Session, User } from "@supabase/supabase-js";
 import { toast } from "sonner";
@@ -93,15 +92,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signInWithGoogle = async () => {
     try {
-      // Use the current hostname/origin for the redirect
-      // This ensures it works both locally and in production
-      const currentSiteUrl = window.location.origin;
-      console.log("Current site URL for redirect:", currentSiteUrl);
+      // Use the deployed domain for redirect instead of window.location.origin
+      // This ensures it works consistently in all environments
+      const redirectUrl = "https://tasky-helpers.lovable.app/auth/callback";
+      console.log("Using redirect URL:", redirectUrl);
       
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
-          redirectTo: `${currentSiteUrl}/auth/callback`,
+          redirectTo: redirectUrl,
           queryParams: {
             prompt: 'select_account'
           }
