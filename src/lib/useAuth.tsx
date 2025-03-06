@@ -2,6 +2,7 @@
 import { useState, createContext, useContext, useEffect } from "react";
 import { createClient, SupabaseClient, Session, User } from "@supabase/supabase-js";
 import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
 
 type AuthContextType = {
   supabase: SupabaseClient;
@@ -52,8 +53,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     getSession();
 
+    // Handle auth state changes and OAuth redirects
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, currentSession) => {
+        console.log("Auth state changed:", event);
+        
         // Check if the user is allowed when auth state changes
         if (currentSession?.user && currentSession.user.email !== ALLOWED_EMAIL) {
           // If not allowed, sign them out immediately
@@ -93,6 +97,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         provider: "google",
         options: {
           redirectTo: `${window.location.origin}/`,
+          queryParams: {
+            prompt: 'select_account'
+          }
         },
       });
 
