@@ -1,6 +1,6 @@
 
 import { create } from "zustand";
-import { persist } from "zustand/middleware";
+import { persist, createJSONStorage } from "zustand/middleware";
 import { Task, TaskStatus, Label } from "@/types/task";
 import { toast } from "sonner";
 import { supabase } from "./useAuth";
@@ -37,6 +37,32 @@ const labelsToString = (labels: string[]): string => {
 const stringToLabels = (labelsString: string | null): string[] => {
   if (!labelsString) return [];
   return labelsString.split(',').filter(id => id.trim() !== '');
+};
+
+// Custom storage that handles access errors
+const safeStorage = {
+  getItem: (name: string): string | null => {
+    try {
+      return localStorage.getItem(name);
+    } catch (error) {
+      console.warn('Could not access localStorage:', error);
+      return null;
+    }
+  },
+  setItem: (name: string, value: string): void => {
+    try {
+      localStorage.setItem(name, value);
+    } catch (error) {
+      console.warn('Could not access localStorage:', error);
+    }
+  },
+  removeItem: (name: string): void => {
+    try {
+      localStorage.removeItem(name);
+    } catch (error) {
+      console.warn('Could not access localStorage:', error);
+    }
+  },
 };
 
 export const useTaskStore = create<TaskState>()(
@@ -430,6 +456,12 @@ export const useTaskStore = create<TaskState>()(
     }),
     {
       name: "task-store",
+      storage: createJSONStorage(() => safeStorage),
+      onRehydrateStorage: () => (state) => {
+        if (!state) {
+          console.warn("Failed to rehydrate task store");
+        }
+      },
     }
   )
 );

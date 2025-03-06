@@ -20,8 +20,13 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   
   useEffect(() => {
     if (user) {
-      // Check if we need to create database tables
-      checkAndSetupTables(user.id);
+      try {
+        // Check if we need to create database tables
+        checkAndSetupTables(user.id);
+      } catch (error) {
+        console.error("Error in Layout useEffect:", error);
+        toast.error("An error occurred while setting up the application");
+      }
     }
   }, [user]);
 
