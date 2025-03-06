@@ -35,16 +35,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     session: null,
     isLoading: false,
     signIn: () => {
-      toast.info("Auth is temporarily disabled");
-      console.log("Auth is temporarily disabled");
+      toast.info("Authentication is bypassed - running direct DB connection");
+      console.log("Authentication is bypassed - DB connection enabled");
     },
     signInWithGoogle: () => {
-      toast.info("Auth is temporarily disabled");
-      console.log("Auth is temporarily disabled");
+      toast.info("Authentication is bypassed - running direct DB connection");
+      console.log("Authentication is bypassed - DB connection enabled");
     },
     signOut: () => {
-      toast.info("Auth is temporarily disabled");
-      console.log("Auth is temporarily disabled");
+      toast.info("Authentication is bypassed - running direct DB connection");
+      console.log("Authentication is bypassed - DB connection enabled");
     },
   };
 
