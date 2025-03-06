@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import Layout from "@/components/layout/Layout";
 import TaskForm from "@/components/task/TaskForm";
@@ -8,7 +9,6 @@ import LabelManager from "@/components/label/LabelManager";
 import { useTaskStore } from "@/lib/taskStore";
 import { Loader2, Tag } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
@@ -49,7 +49,7 @@ const Index: React.FC = () => {
                     <DialogTrigger asChild>
                       <Button
                         variant="outline"
-                        size="icon"
+                        size="sm"
                         className="ml-auto flex items-center h-8 w-8"
                       >
                         <Tag className="h-3.5 w-3.5" />
