@@ -50,13 +50,23 @@ export const useTaskStore = create<TaskState>()(
             .select("count()")
             .limit(1);
             
-          // Initialize tasks table if it doesn't exist
+          // Create tasks table if it doesn't exist
           if (tasksCheckError && tasksCheckError.code === "42P01") {
-            console.log("Tasks table doesn't exist. Please create it in Supabase.");
-            toast.error("The tasks table doesn't exist in your database", {
-              description: "You need to create it in the Supabase dashboard.",
-              duration: 6000,
-            });
+            console.log("Tasks table doesn't exist. Creating it now.");
+            
+            // Use RPC to create the table
+            const { error: createTasksError } = await supabase.rpc('create_tasks_table');
+            
+            if (createTasksError) {
+              console.error("Error creating tasks table:", createTasksError);
+              toast.error("Failed to create tasks table", {
+                description: "Please check your Supabase permissions or create it manually.",
+                duration: 6000,
+              });
+            } else {
+              console.log("Tasks table created successfully");
+              toast.success("Tasks table created successfully");
+            }
           }
           
           // Check if labels table exists
@@ -65,20 +75,30 @@ export const useTaskStore = create<TaskState>()(
             .select("count()")
             .limit(1);
             
-          // Initialize labels table if it doesn't exist
+          // Create labels table if it doesn't exist
           if (labelsCheckError && labelsCheckError.code === "42P01") {
-            console.log("Labels table doesn't exist. Please create it in Supabase.");
-            toast.error("The labels table doesn't exist in your database", {
-              description: "You need to create it in the Supabase dashboard.",
-              duration: 6000,
-            });
+            console.log("Labels table doesn't exist. Creating it now.");
+            
+            // Use RPC to create the table
+            const { error: createLabelsError } = await supabase.rpc('create_labels_table');
+            
+            if (createLabelsError) {
+              console.error("Error creating labels table:", createLabelsError);
+              toast.error("Failed to create labels table", {
+                description: "Please check your Supabase permissions or create it manually.",
+                duration: 6000,
+              });
+            } else {
+              console.log("Labels table created successfully");
+              toast.success("Labels table created successfully");
+            }
           }
           
-          // Mark as initialized even if tables don't exist yet
+          // Mark as initialized even if tables couldn't be created
           // This prevents repeated error messages
           set({ tablesInitialized: true });
         } catch (error) {
-          console.error("Error checking tables:", error);
+          console.error("Error checking/creating tables:", error);
         } finally {
           set({ isLoading: false });
         }
