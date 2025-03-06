@@ -60,10 +60,10 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         <p className="font-medium">Database Setup Instructions:</p>
         <p>Create these tables in your Supabase SQL Editor:</p>
         <ol className="list-decimal pl-5 space-y-1 text-sm">
-          <li><strong>tasks</strong> table with columns: id, title, completed, due_date, created_at, user_id, labels</li>
+          <li><strong>tasks</strong> table with columns: id, title, completed, due_date, created_at, user_id, labels_string</li>
           <li><strong>labels</strong> table with columns: id, name, color, user_id</li>
         </ol>
-        <p className="text-xs mt-2">Note: The labels column in tasks should be an array of strings.</p>
+        <p className="text-xs mt-2">Note: The labels_string column in tasks should be text that stores comma-separated label IDs.</p>
       </div>,
       {
         duration: 15000,

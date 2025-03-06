@@ -1,3 +1,4 @@
+
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { Task, TaskStatus, Label } from "@/types/task";
@@ -26,6 +27,17 @@ interface TaskState {
   deleteLabel: (id: string) => Promise<void>;
   initializeTables: (userId: string) => Promise<void>;
 }
+
+// Helper function to convert array to comma-separated string
+const labelsToString = (labels: string[]): string => {
+  return labels.join(',');
+};
+
+// Helper function to convert comma-separated string to array
+const stringToLabels = (labelsString: string | null): string[] => {
+  if (!labelsString) return [];
+  return labelsString.split(',').filter(id => id.trim() !== '');
+};
 
 export const useTaskStore = create<TaskState>()(
   persist(
@@ -130,7 +142,7 @@ export const useTaskStore = create<TaskState>()(
               due_date: newTask.dueDate,
               created_at: newTask.createdAt,
               user_id: data.user.id,
-              labels: newTask.labels,
+              labels_string: labelsToString(newTask.labels),
             });
           } catch (error) {
             console.error("Error saving task to Supabase:", error);
@@ -173,7 +185,7 @@ export const useTaskStore = create<TaskState>()(
         if (data.user) {
           try {
             await supabase.from("tasks").update({
-              labels,
+              labels_string: labelsToString(labels),
             }).eq("id", id).eq("user_id", data.user.id);
           } catch (error) {
             console.error("Error updating task labels in Supabase:", error);
@@ -339,7 +351,7 @@ export const useTaskStore = create<TaskState>()(
             
             for (const task of tasksToUpdate) {
               await supabase.from("tasks").update({
-                labels: task.labels,
+                labels_string: labelsToString(task.labels),
               }).eq("id", task.id).eq("user_id", data.user.id);
             }
           } catch (error) {
@@ -381,7 +393,7 @@ export const useTaskStore = create<TaskState>()(
               dueDate: task.due_date ? new Date(task.due_date) : null,
               createdAt: new Date(task.created_at),
               userId: task.user_id,
-              labels: task.labels || [],
+              labels: stringToLabels(task.labels_string),
             }));
             
             set({ tasks: formattedTasks });
