@@ -8,9 +8,9 @@ type AuthContextType = {
   user: User | null;
   session: Session | null;
   isLoading: boolean;
-  signIn: () => void;
-  signInWithGoogle: () => void;
-  signOut: () => void;
+  signIn: () => Promise<void>;
+  signInWithGoogle: () => Promise<void>;
+  signOut: () => Promise<void>;
 };
 
 // Create a singleton instance of the Supabase client
@@ -19,7 +19,7 @@ export const supabase = createClient(
   import.meta.env.VITE_SUPABASE_ANON_KEY || ""
 );
 
-// Create a mock user with proper UUID for development without authentication
+// Create a mock user with proper UUID format for development without authentication
 const mockUser = {
   id: "123e4567-e89b-12d3-a456-426614174000", // Valid UUID format
   email: "mock-user@example.com",
@@ -33,75 +33,104 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Set up initial session
-    setUser(mockUser);
-    setIsLoading(false);
+    // Check for existing session on load
+    const checkSession = async () => {
+      try {
+        // Check for existing session
+        const { data } = await supabase.auth.getSession();
+        if (data.session) {
+          setSession(data.session);
+          setUser(data.session.user);
+        } else {
+          // Use mock user when no real session exists
+          setUser(mockUser);
+          
+          // For development, create a mock session that works with RLS
+          await supabase.auth.signInWithPassword({
+            email: 'mock-user@example.com',
+            password: 'password123',
+          }).catch(() => {
+            // If sign-in fails, we're in development mode without real auth
+            console.log("Using mock authentication");
+          });
+        }
+        setIsLoading(false);
+      } catch (error) {
+        console.error("Auth initialization error:", error);
+        // Fallback to mock user
+        setUser(mockUser);
+        setIsLoading(false);
+      }
+    };
 
-    // Set up auth state listener - this is commented out because we're using mock auth
-    // But would be needed for real auth implementation
-    /*
+    // Set up auth state listener for changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
-        setSession(session);
-        setUser(session?.user ?? null);
+      (_event, newSession) => {
+        setSession(newSession);
+        setUser(newSession?.user ?? mockUser);
         setIsLoading(false);
       }
     );
     
+    checkSession();
+    
     return () => {
       subscription.unsubscribe();
     };
-    */
   }, []);
 
-  // Create special Supabase client that will work with RLS
-  useEffect(() => {
-    if (!user) return;
-    
-    // This is a workaround to make Supabase RLS work with our mock user
-    const setupMockAuth = async () => {
-      try {
-        // Create a mock JWT that Supabase will accept
-        // In a real implementation, we wouldn't need this hack
-        await supabase.auth.setSession({
-          access_token: 'mock-jwt-token',
-          refresh_token: '',
-        });
-        
-        // Then immediately set the user claims to match our mock user
-        // @ts-ignore - this is a hack to make the mock user work with RLS
-        supabase.auth.setAuth(mockUser.id);
-        
-        console.log("Mock authentication set up for RLS compatibility");
-      } catch (error) {
-        console.error("Error setting up mock auth:", error);
-      }
-    };
-    
-    setupMockAuth();
-  }, [user]);
-
-  // Provide a mock implementation that bypasses actual authentication
-  const mockAuthValue: AuthContextType = {
-    supabase,
-    user: user,
-    session: session,
-    isLoading,
-    signIn: () => {
-      toast.info("Authentication is bypassed - running direct DB connection");
-      console.log("Authentication is bypassed - DB connection enabled");
-    },
-    signInWithGoogle: () => {
-      toast.info("Authentication is bypassed - running direct DB connection");
-      console.log("Authentication is bypassed - DB connection enabled");
-    },
-    signOut: () => {
-      toast.info("Authentication is bypassed - running direct DB connection");
-      console.log("Authentication is bypassed - DB connection enabled");
-    },
+  const signIn = async () => {
+    try {
+      await supabase.auth.signInWithPassword({
+        email: 'demo@example.com',
+        password: 'demopassword',
+      });
+      toast.success("Signed in successfully");
+    } catch (error) {
+      console.error("Sign in error:", error);
+      toast.error("Failed to sign in");
+      // Fall back to mock user
+      setUser(mockUser);
+    }
   };
 
-  return <AuthContext.Provider value={mockAuthValue}>{children}</AuthContext.Provider>;
+  const signInWithGoogle = async () => {
+    try {
+      await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: window.location.origin,
+        },
+      });
+    } catch (error) {
+      console.error("Google sign in error:", error);
+      toast.error("Failed to sign in with Google");
+      // Fall back to mock user
+      setUser(mockUser);
+    }
+  };
+
+  const signOut = async () => {
+    try {
+      await supabase.auth.signOut();
+      toast.info("Signed out successfully");
+    } catch (error) {
+      console.error("Sign out error:", error);
+      toast.error("Failed to sign out");
+    }
+  };
+
+  const authValue: AuthContextType = {
+    supabase,
+    user,
+    session,
+    isLoading,
+    signIn,
+    signInWithGoogle,
+    signOut,
+  };
+
+  return <AuthContext.Provider value={authValue}>{children}</AuthContext.Provider>;
 }
 
 export const useAuth = () => {

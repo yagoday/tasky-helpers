@@ -41,7 +41,10 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
               <Button 
                 variant="outline" 
                 className="w-full justify-start gap-2 border-purple-200 hover:bg-purple-50"
-                onClick={signOut}
+                onClick={() => {
+                  signOut();
+                  onClose();
+                }}
               >
                 <LogOut className="h-4 w-4 text-purple-500" />
                 Sign out
@@ -51,7 +54,10 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
             <div className="space-y-3">
               <Button 
                 className="w-full justify-start gap-2 bg-purple-100 text-purple-800 hover:bg-purple-200"
-                onClick={signInWithGoogle}
+                onClick={() => {
+                  signInWithGoogle();
+                  onClose();
+                }}
                 disabled={isLoading}
               >
                 <svg className="h-4 w-4" viewBox="0 0 24 24">
@@ -83,7 +89,10 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
               <Button 
                 variant="outline" 
                 className="w-full justify-start gap-2 border-purple-200 hover:bg-purple-50"
-                onClick={signIn}
+                onClick={() => {
+                  signIn();
+                  onClose();
+                }}
                 disabled={isLoading}
               >
                 <Mail className="h-4 w-4 text-purple-500" />
