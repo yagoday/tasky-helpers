@@ -35,6 +35,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
                 <User className="h-5 w-5 text-purple-500" />
                 <div className="flex-1 truncate">
                   <p className="text-sm font-medium">{user.email}</p>
+                  <p className="text-xs text-muted-foreground">User ID: {user.id.substring(0, 8)}...</p>
                 </div>
               </div>
               
@@ -56,7 +57,6 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
                 className="w-full justify-start gap-2 bg-purple-100 text-purple-800 hover:bg-purple-200"
                 onClick={() => {
                   signInWithGoogle();
-                  onClose();
                 }}
                 disabled={isLoading}
               >
@@ -91,12 +91,11 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
                 className="w-full justify-start gap-2 border-purple-200 hover:bg-purple-50"
                 onClick={() => {
                   signIn();
-                  onClose();
                 }}
                 disabled={isLoading}
               >
                 <Mail className="h-4 w-4 text-purple-500" />
-                Sign in with Email
+                Sign in with Demo Account
               </Button>
             </div>
           )}

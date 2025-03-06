@@ -19,12 +19,6 @@ export const supabase = createClient(
   import.meta.env.VITE_SUPABASE_ANON_KEY || ""
 );
 
-// Create a mock user with proper UUID format for development without authentication
-const mockUser = {
-  id: "123e4567-e89b-12d3-a456-426614174000", // Valid UUID format
-  email: "mock-user@example.com",
-} as User;
-
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
@@ -38,27 +32,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       try {
         // Check for existing session
         const { data } = await supabase.auth.getSession();
-        if (data.session) {
-          setSession(data.session);
-          setUser(data.session.user);
-        } else {
-          // Use mock user when no real session exists
-          setUser(mockUser);
-          
-          // For development, create a mock session that works with RLS
-          await supabase.auth.signInWithPassword({
-            email: 'mock-user@example.com',
-            password: 'password123',
-          }).catch(() => {
-            // If sign-in fails, we're in development mode without real auth
-            console.log("Using mock authentication");
-          });
-        }
+        setSession(data.session);
+        setUser(data.session?.user || null);
         setIsLoading(false);
       } catch (error) {
         console.error("Auth initialization error:", error);
-        // Fallback to mock user
-        setUser(mockUser);
         setIsLoading(false);
       }
     };
@@ -67,7 +45,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (_event, newSession) => {
         setSession(newSession);
-        setUser(newSession?.user ?? mockUser);
+        setUser(newSession?.user || null);
         setIsLoading(false);
       }
     );
@@ -81,38 +59,46 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signIn = async () => {
     try {
-      await supabase.auth.signInWithPassword({
+      const { error } = await supabase.auth.signInWithPassword({
         email: 'demo@example.com',
         password: 'demopassword',
       });
+      
+      if (error) {
+        throw error;
+      }
+      
       toast.success("Signed in successfully");
     } catch (error) {
       console.error("Sign in error:", error);
       toast.error("Failed to sign in");
-      // Fall back to mock user
-      setUser(mockUser);
     }
   };
 
   const signInWithGoogle = async () => {
     try {
-      await supabase.auth.signInWithOAuth({
+      const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
           redirectTo: window.location.origin,
         },
       });
+      
+      if (error) {
+        throw error;
+      }
     } catch (error) {
       console.error("Google sign in error:", error);
       toast.error("Failed to sign in with Google");
-      // Fall back to mock user
-      setUser(mockUser);
     }
   };
 
   const signOut = async () => {
     try {
-      await supabase.auth.signOut();
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        throw error;
+      }
       toast.info("Signed out successfully");
     } catch (error) {
       console.error("Sign out error:", error);
