@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import { useAuth } from "@/lib/useAuth";
 import AuthModal from "./AuthModal";
 import { Loader2 } from "lucide-react";
+import { useTaskStore } from "@/lib/taskStore";
 
 interface LoginGateProps {
   children: React.ReactNode;
@@ -11,6 +12,7 @@ interface LoginGateProps {
 const LoginGate: React.FC<LoginGateProps> = ({ children }) => {
   const { user, isLoading } = useAuth();
   const [showAuthModal, setShowAuthModal] = useState(false);
+  const { syncWithSupabase } = useTaskStore();
   
   useEffect(() => {
     // If user is not loading and not logged in, show the auth modal
@@ -18,8 +20,16 @@ const LoginGate: React.FC<LoginGateProps> = ({ children }) => {
       setShowAuthModal(true);
     } else if (user) {
       setShowAuthModal(false);
+      
+      // Try to sync with Supabase as soon as user is authenticated
+      // This ensures we have data even if local storage fails
+      try {
+        syncWithSupabase(user.id);
+      } catch (error) {
+        console.error("Failed to sync with Supabase in LoginGate:", error);
+      }
     }
-  }, [user, isLoading]);
+  }, [user, isLoading, syncWithSupabase]);
 
   if (isLoading) {
     return (

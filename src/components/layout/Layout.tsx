@@ -50,9 +50,8 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         return;
       }
       
-      // If RPC functions exist, proceed with initialization
-      await initializeTables(userId);
-      // Then sync data
+      // If RPC functions exist, proceed to sync without initialization
+      // The sync function will handle initialization if needed
       await syncWithSupabase(userId);
     } catch (error) {
       console.error("Error checking/setting up tables:", error);
