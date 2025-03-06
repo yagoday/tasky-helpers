@@ -3,7 +3,7 @@ import React from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useAuth } from "@/lib/useAuth";
-import { Mail, LogOut, User } from "lucide-react";
+import { LogOut, User } from "lucide-react";
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -11,7 +11,7 @@ interface AuthModalProps {
 }
 
 const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
-  const { user, signIn, signInWithGoogle, signOut, isLoading } = useAuth();
+  const { user, signInWithGoogle, signOut, isLoading } = useAuth();
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -80,22 +80,6 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
                   <path d="M1 1h22v22H1z" fill="none" />
                 </svg>
                 Sign in with Google
-              </Button>
-              
-              <div className="text-xs text-purple-500 mt-1 px-2">
-                <p>Note: You need to enable the Google provider in your Supabase project settings.</p>
-              </div>
-              
-              <Button 
-                variant="outline" 
-                className="w-full justify-start gap-2 border-purple-200 hover:bg-purple-50"
-                onClick={() => {
-                  signIn();
-                }}
-                disabled={isLoading}
-              >
-                <Mail className="h-4 w-4 text-purple-500" />
-                Sign in with Demo Account
               </Button>
             </div>
           )}

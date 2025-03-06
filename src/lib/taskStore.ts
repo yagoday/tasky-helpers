@@ -1,4 +1,3 @@
-
 import { create } from "zustand";
 import { Task, TaskStatus, Label } from "@/types/task";
 import { toast } from "sonner";
@@ -27,7 +26,6 @@ interface TaskState {
   initializeTables: (userId: string) => Promise<void>;
 }
 
-// Initial demo data with proper UUID
 const INITIAL_TASKS: Task[] = [
   {
     id: "1",
@@ -62,7 +60,6 @@ const INITIAL_LABELS: Label[] = [
   }
 ];
 
-// Create the store with Supabase persistence but no auth requirements
 export const useTaskStore = create<TaskState>((set, get) => ({
   tasks: INITIAL_TASKS,
   labels: INITIAL_LABELS,
@@ -73,36 +70,30 @@ export const useTaskStore = create<TaskState>((set, get) => ({
 
   initializeTables: async (userId: string) => {
     try {
-      // Create tasks table if it doesn't exist
       const { error: tasksError } = await supabase
         .from('tasks')
         .select('id')
         .limit(1)
         .maybeSingle();
 
-      // Check if we need to create the table
       if (tasksError && tasksError.code === '42P01') {
         console.log("Creating tasks table");
-        // This is handled by Supabase migrations
       }
 
-      // Create labels table if it doesn't exist
       const { error: labelsError } = await supabase
         .from('labels')
         .select('id')
         .limit(1)
         .maybeSingle();
 
-      // Check if we need to create the table
       if (labelsError && labelsError.code === '42P01') {
         console.log("Creating labels table");
-        // This is handled by Supabase migrations
       }
 
       set({ tablesInitialized: true, isLoading: false });
     } catch (error) {
       console.error("Error initializing tables:", error);
-      set({ tablesInitialized: true, isLoading: false }); // Continue anyway
+      set({ tablesInitialized: true, isLoading: false });
     }
   },
 
@@ -116,11 +107,10 @@ export const useTaskStore = create<TaskState>((set, get) => ({
         completed: false,
         dueDate,
         createdAt: new Date(),
-        userId: "123e4567-e89b-12d3-a456-426614174000",
+        userId: supabase.auth.getUser().then(({ data }) => data.user?.id) || crypto.randomUUID(),
         labels: labels,
       };
 
-      // Try to save to Supabase
       const { error } = await supabase
         .from('tasks')
         .insert([
@@ -131,13 +121,12 @@ export const useTaskStore = create<TaskState>((set, get) => ({
             due_date: newTask.dueDate,
             created_at: newTask.createdAt,
             user_id: newTask.userId,
-            labels_string: newTask.labels // Use labels_string instead of labels
+            labels: newTask.labels
           }
         ]);
 
       if (error) {
         console.error("Supabase insert error:", error);
-        // Fall back to client-side storage
         console.log("Using local storage only");
       }
   
@@ -166,7 +155,6 @@ export const useTaskStore = create<TaskState>((set, get) => ({
       
       const newCompleted = !task.completed;
       
-      // Try to update in Supabase
       const { error } = await supabase
         .from('tasks')
         .update({ completed: newCompleted })
@@ -196,10 +184,9 @@ export const useTaskStore = create<TaskState>((set, get) => ({
     try {
       set({ isLoading: true });
       
-      // Try to update in Supabase
       const { error } = await supabase
         .from('tasks')
-        .update({ labels_string: labels }) // Use labels_string instead of labels
+        .update({ labels: labels })
         .eq('id', id);
         
       if (error) {
@@ -226,7 +213,6 @@ export const useTaskStore = create<TaskState>((set, get) => ({
     try {
       set({ isLoading: true });
       
-      // Try to update in Supabase
       const { error } = await supabase
         .from('tasks')
         .update({ due_date: dueDate })
@@ -256,7 +242,6 @@ export const useTaskStore = create<TaskState>((set, get) => ({
     try {
       set({ isLoading: true });
       
-      // Try to delete from Supabase
       const { error } = await supabase
         .from('tasks')
         .delete()
@@ -288,7 +273,6 @@ export const useTaskStore = create<TaskState>((set, get) => ({
         .filter(task => task.completed)
         .map(task => task.id);
         
-      // Try to delete completed tasks from Supabase  
       for (const id of completedTaskIds) {
         const { error } = await supabase
           .from('tasks')
@@ -343,12 +327,10 @@ export const useTaskStore = create<TaskState>((set, get) => ({
       console.log("Syncing with Supabase for userId:", userId);
       set({ isLoading: true });
 
-      // Initialize tables if needed
       if (!get().tablesInitialized) {
         await get().initializeTables(userId);
       }
 
-      // Try to fetch tasks from Supabase
       const { data: taskData, error: taskError } = await supabase
         .from('tasks')
         .select('*')
@@ -357,7 +339,6 @@ export const useTaskStore = create<TaskState>((set, get) => ({
       if (taskError) {
         console.error("Error fetching tasks:", taskError);
       } else {
-        // Process tasks - handle date conversion
         const tasks: Task[] = taskData?.map((task: any) => ({
           id: task.id,
           title: task.title,
@@ -365,16 +346,14 @@ export const useTaskStore = create<TaskState>((set, get) => ({
           dueDate: task.due_date ? new Date(task.due_date) : null,
           createdAt: new Date(task.created_at),
           userId: task.user_id,
-          labels: task.labels_string || [], // Use labels_string instead of labels
+          labels: task.labels || []
         })) || [];
 
-        // Only update if we got data
         if (tasks.length > 0) {
           set({ tasks });
         }
       }
 
-      // Try to fetch labels from Supabase
       const { data: labelData, error: labelError } = await supabase
         .from('labels')
         .select('*')
@@ -383,14 +362,12 @@ export const useTaskStore = create<TaskState>((set, get) => ({
       if (labelError) {
         console.error("Error fetching labels:", labelError);
       } else {
-        // Process labels
         const labels: Label[] = labelData?.map((label: any) => ({
           id: label.id,
           name: label.name,
           color: label.color,
         })) || [];
 
-        // Only update if we got data
         if (labels.length > 0) {
           set({ labels });
         }
@@ -400,7 +377,6 @@ export const useTaskStore = create<TaskState>((set, get) => ({
       set({ isLoading: false });
     } catch (error) {
       console.error("Error syncing with Supabase:", error);
-      // Continue with local data
       set({ isLoading: false });
     }
   },
@@ -415,7 +391,6 @@ export const useTaskStore = create<TaskState>((set, get) => ({
         color,
       };
     
-      // Try to save to Supabase
       const { error } = await supabase
         .from('labels')
         .insert([
@@ -449,7 +424,6 @@ export const useTaskStore = create<TaskState>((set, get) => ({
     try {
       set({ isLoading: true });
       
-      // Try to update in Supabase
       const { error } = await supabase
         .from('labels')
         .update({ name, color })
@@ -479,7 +453,6 @@ export const useTaskStore = create<TaskState>((set, get) => ({
     try {
       set({ isLoading: true });
       
-      // Try to delete from Supabase
       const { error } = await supabase
         .from('labels')
         .delete()
