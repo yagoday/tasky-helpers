@@ -13,6 +13,9 @@ type AuthContextType = {
   signOut: () => void;
 };
 
+// The only allowed email address
+const ALLOWED_EMAIL = "yaron.yagoda@gmail.com";
+
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
@@ -33,25 +36,43 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         console.error("Error getting session:", error);
       }
       
-      setSession(session);
-      setUser(session?.user || null);
+      if (session?.user && session.user.email !== ALLOWED_EMAIL) {
+        // If a non-allowed user somehow got a session, sign them out
+        await supabase.auth.signOut();
+        toast.error("Unauthorized access. Only the app owner can sign in.");
+        setSession(null);
+        setUser(null);
+      } else {
+        setSession(session);
+        setUser(session?.user || null);
+      }
+      
       setIsLoading(false);
     };
 
     getSession();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, currentSession) => {
-        if (event === "SIGNED_IN") {
-          toast.success("Successfully signed in!");
+      async (event, currentSession) => {
+        // Check if the user is allowed when auth state changes
+        if (currentSession?.user && currentSession.user.email !== ALLOWED_EMAIL) {
+          // If not allowed, sign them out immediately
+          await supabase.auth.signOut();
+          toast.error("Unauthorized access. Only the app owner can sign in.");
+          setSession(null);
+          setUser(null);
+        } else {
+          if (event === "SIGNED_IN") {
+            toast.success("Successfully signed in!");
+          }
+          
+          if (event === "SIGNED_OUT") {
+            toast.success("Successfully signed out!");
+          }
+          
+          setSession(currentSession);
+          setUser(currentSession?.user || null);
         }
-        
-        if (event === "SIGNED_OUT") {
-          toast.success("Successfully signed out!");
-        }
-        
-        setSession(currentSession);
-        setUser(currentSession?.user || null);
       }
     );
 

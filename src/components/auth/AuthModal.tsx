@@ -3,12 +3,15 @@ import React from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useAuth } from "@/lib/useAuth";
-import { Mail, LockKeyhole, LogOut, User } from "lucide-react";
+import { Mail, LockKeyhole, LogOut, User, AlertTriangle } from "lucide-react";
 
 interface AuthModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
+
+// The only allowed email address
+const ALLOWED_EMAIL = "yaron.yagoda@gmail.com";
 
 const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
   const { user, signIn, signInWithGoogle, signOut, isLoading } = useAuth();
@@ -23,7 +26,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
           <DialogDescription className="text-purple-600">
             {user 
               ? "You're currently signed in to Tasky"
-              : "Sign in to sync your tasks across devices"
+              : "Only the app owner (yaron.yagoda@gmail.com) can sign in"
             }
           </DialogDescription>
         </DialogHeader>
@@ -49,6 +52,13 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
             </div>
           ) : (
             <div className="space-y-3">
+              <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
+                <div className="flex items-center gap-2">
+                  <AlertTriangle className="h-4 w-4" />
+                  <p>This is a private app with restricted access</p>
+                </div>
+              </div>
+
               <Button 
                 className="w-full justify-start gap-2 bg-purple-100 text-purple-800 hover:bg-purple-200"
                 onClick={signInWithGoogle}
@@ -73,7 +83,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
                   />
                   <path d="M1 1h22v22H1z" fill="none" />
                 </svg>
-                Continue with Google
+                Sign in with Google
               </Button>
               
               <Button 
@@ -83,7 +93,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
                 disabled={isLoading}
               >
                 <Mail className="h-4 w-4 text-purple-500" />
-                Continue with Email
+                Sign in with Email
               </Button>
             </div>
           )}
