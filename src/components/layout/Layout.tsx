@@ -1,6 +1,5 @@
-
 import React from "react";
-import { User } from "lucide-react";
+import { User, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/useAuth";
 import { useState, useEffect } from "react";
@@ -15,7 +14,7 @@ interface LayoutProps {
 
 const Layout: React.FC<LayoutProps> = ({ children }) => {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
   const { syncWithSupabase, initializeTables } = useTaskStore();
   
   useEffect(() => {
@@ -29,6 +28,18 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       }
     }
   }, [user]);
+
+  const handleSignOut = async () => {
+    try {
+      console.log("Layout: Attempting to sign out");
+      await signOut();
+      console.log("Layout: Sign out completed");
+      toast.success("Successfully signed out");
+    } catch (error) {
+      console.error("Layout: Sign out error:", error);
+      toast.error("Failed to sign out. Please try again.");
+    }
+  };
 
   const checkAndSetupTables = async (userId: string) => {
     try {
@@ -80,14 +91,27 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       <header className="border-b border-purple-200 bg-white/70 backdrop-blur-sm sticky top-0 z-10">
         <div className="mx-auto max-w-3xl px-4 py-3 sm:px-6 flex justify-between items-center">
           <h1 className="text-xl font-semibold text-purple-800">Taskush</h1>
-          <Button 
-            variant="ghost" 
-            size="icon"
-            className="rounded-full h-9 w-9 hover:bg-purple-100"
-            onClick={() => setIsAuthModalOpen(true)}
-          >
-            <User className="h-5 w-5 text-purple-600" />
-          </Button>
+          <div className="flex items-center gap-2">
+            {user && (
+              <Button 
+                variant="outline" 
+                size="sm"
+                className="flex items-center gap-1.5"
+                onClick={handleSignOut}
+              >
+                <LogOut className="h-3.5 w-3.5" />
+                <span>Sign Out</span>
+              </Button>
+            )}
+            <Button 
+              variant="ghost" 
+              size="icon"
+              className="rounded-full h-9 w-9 hover:bg-purple-100"
+              onClick={() => setIsAuthModalOpen(true)}
+            >
+              <User className="h-5 w-5 text-purple-600" />
+            </Button>
+          </div>
         </div>
       </header>
       
