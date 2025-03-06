@@ -28,15 +28,11 @@ const LoginGate: React.FC<LoginGateProps> = ({ children }) => {
           setSyncAttempted(true);
           
           // Try to sync with Supabase as soon as user is authenticated
-          try {
-            syncWithSupabase(user.id)
-              .catch(error => {
-                console.error("Error syncing with Supabase:", error);
-                toast.error("Failed to sync your data");
-              });
-          } catch (error) {
-            console.error("Failed to sync with Supabase in LoginGate:", error);
-          }
+          syncWithSupabase(user.id)
+            .catch(error => {
+              console.error("Error syncing with Supabase:", error);
+              toast.error("Failed to sync your data");
+            });
         }
       }
     }
