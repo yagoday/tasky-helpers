@@ -76,6 +76,10 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
                 Sign in with Google
               </Button>
               
+              <div className="text-xs text-purple-500 mt-1 px-2">
+                <p>Note: You need to enable the Google provider in your Supabase project settings.</p>
+              </div>
+              
               <Button 
                 variant="outline" 
                 className="w-full justify-start gap-2 border-purple-200 hover:bg-purple-50"

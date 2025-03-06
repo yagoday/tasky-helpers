@@ -88,16 +88,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const signInWithGoogle = async () => {
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: {
-        redirectTo: `${window.location.origin}/`,
-      },
-    });
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo: `${window.location.origin}/`,
+        },
+      });
 
-    if (error) {
-      toast.error("Error signing in with Google");
-      console.error("Error signing in with Google:", error);
+      if (error) {
+        if (error.message.includes("provider is not enabled")) {
+          toast.error("Google sign-in is not enabled. Please configure the Google provider in your Supabase project.");
+          console.error("Google provider not enabled in Supabase. Enable it in the Supabase dashboard:", error);
+        } else {
+          toast.error("Error signing in with Google");
+          console.error("Error signing in with Google:", error);
+        }
+      }
+    } catch (error) {
+      toast.error("An unexpected error occurred during sign-in");
+      console.error("Unexpected error during sign-in:", error);
     }
   };
 
