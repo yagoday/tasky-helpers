@@ -41,7 +41,7 @@ const Index: React.FC = () => {
               </h2>
               
               <div className="flex items-center">
-                {/* {isMobile ? (
+                {isMobile ? (
                   <Dialog>
                     <DialogTrigger asChild>
                       <Button
@@ -56,7 +56,7 @@ const Index: React.FC = () => {
                       <LabelManager />
                     </DialogContent>
                   </Dialog>
-                ) : ( */}
+                ) : (
                   <Button
                     variant="outline"
                     size="sm"
