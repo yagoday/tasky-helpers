@@ -66,7 +66,7 @@ const Index: React.FC = () => {
                     <Tag className="h-3.5 w-3.5" />
                     <span>Manage Labels</span>
                   </Button>
-                {/* } */}
+                )}
               </div>
             </div>
             
