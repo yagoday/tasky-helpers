@@ -2,7 +2,7 @@ import { create } from "zustand";
 import { Label, LabelState } from "@/types/label";
 import { LabelService } from "@/services/labelService";
 import { handleStoreError, handleStoreSuccess } from "@/utils/errorHandling";
-import { supabase } from "@/lib/useAuth";
+import { supabase } from "@/integrations/supabase/client";
 
 export const useLabelStore = create<LabelState>((set, get) => ({
   labels: [],
@@ -84,4 +84,4 @@ export const useLabelStore = create<LabelState>((set, get) => ({
   setLabelFilter: (labelId: string | null) => {
     set({ labelFilter: labelId });
   }
-})); 
+}));

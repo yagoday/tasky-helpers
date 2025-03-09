@@ -1,3 +1,4 @@
+
 export const getEnvVariable = (key: string): string | undefined => {
   // Check if we're in Deno environment (Supabase Edge Functions)
   if (typeof Deno !== 'undefined') {
@@ -11,17 +12,3 @@ export const getEnvVariable = (key: string): string | undefined => {
   console.log('⚡ Getting env from Vite:', { key });
   return value;
 };
-
-export const getSupabaseConfig = () => {
-  const supabaseUrl = getEnvVariable('VITE_SUPABASE_URL');
-  const supabaseAnonKey = getEnvVariable('VITE_SUPABASE_ANON_KEY');
-  
-  if (!supabaseUrl || !supabaseAnonKey) {
-    console.error("Missing Supabase environment variables");
-  }
-  
-  return {
-    supabaseUrl,
-    supabaseAnonKey
-  };
-}; 

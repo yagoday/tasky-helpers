@@ -1,4 +1,5 @@
-import { supabase } from "@/lib/useAuth";
+
+import { supabase } from "@/integrations/supabase/client";
 import { Label } from "@/types/label";
 
 export const LabelService = {
@@ -33,4 +34,4 @@ export const LabelService = {
       .select('*')
       .eq('user_id', userId);
   }
-}; 
+};

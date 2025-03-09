@@ -1,4 +1,5 @@
-import { supabase } from "@/lib/useAuth";
+
+import { supabase } from "@/integrations/supabase/client";
 import { Task } from "@/types/task";
 
 export const TaskService = {
@@ -36,4 +37,4 @@ export const TaskService = {
       .select('*')
       .eq('user_id', userId);
   }
-}; 
+};
