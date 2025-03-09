@@ -12,21 +12,9 @@ type AuthContextType = {
   signOut: () => Promise<void>;
 };
 
-// Get the Supabase URL and anon key from Deno.env (Edge Function) or import.meta.env (local dev)
+// Get the Supabase URL and anon key from environment variables
 const getSupabaseConfig = () => {
-  // For Edge Functions environment
-  if (typeof Deno !== 'undefined') {
-    try {
-      return {
-        supabaseUrl: Deno.env.get("SUPABASE_URL") || "",
-        supabaseAnonKey: Deno.env.get("SUPABASE_ANON_KEY") || ""
-      };
-    } catch (error) {
-      console.error("Error accessing Deno.env:", error);
-    }
-  }
-  
-  // Fallback to Vite environment variables for local development
+  // For Vite environment variables in local development
   return {
     supabaseUrl: import.meta.env.VITE_SUPABASE_URL || "",
     supabaseAnonKey: import.meta.env.VITE_SUPABASE_ANON_KEY || ""
