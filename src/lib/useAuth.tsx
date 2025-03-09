@@ -19,21 +19,22 @@ const getSupabaseConfig = () => {
   const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
   
   if (!supabaseUrl || !supabaseAnonKey) {
-    console.error("Missing Supabase environment variables");
+    console.error("Missing Supabase environment variables. Please add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY to your .env file");
+    toast.error("Supabase configuration missing. Check console for details.");
   }
   
   return {
-    supabaseUrl: supabaseUrl || "",
-    supabaseAnonKey: supabaseAnonKey || ""
+    supabaseUrl,
+    supabaseAnonKey
   };
 };
 
 const { supabaseUrl, supabaseAnonKey } = getSupabaseConfig();
 
 // Create a singleton instance of the Supabase client
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
-
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+export const supabase = supabaseUrl && supabaseAnonKey 
+  ? createClient(supabaseUrl, supabaseAnonKey)
+  : null as unknown as SupabaseClient; // This cast is to prevent TypeScript errors, but the app will show an error message
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
@@ -41,6 +42,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    // Check if Supabase is configured
+    if (!supabaseUrl || !supabaseAnonKey) {
+      setIsLoading(false);
+      return;
+    }
+
     // Check for existing session on load
     const checkSession = async () => {
       try {
@@ -129,6 +136,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     signInWithGoogle,
     signOut,
   };
+
+  // Display an error message if Supabase is not configured
+  if (!supabaseUrl || !supabaseAnonKey) {
+    return (
+      <div className="flex items-center justify-center h-screen flex-col p-4">
+        <div className="w-full max-w-md p-8 space-y-4 rounded-2xl border border-red-200 bg-white/90 backdrop-blur-sm shadow-sm text-center">
+          <h2 className="text-2xl font-bold tracking-tight text-red-800">Configuration Error</h2>
+          <p className="mt-2 text-red-600">
+            Missing Supabase configuration. Please set up your environment variables.
+          </p>
+          <div className="mt-4 p-4 bg-gray-50 rounded-lg text-left text-sm">
+            <p className="font-medium">Create a <code className="bg-gray-100 p-1 rounded">.env</code> file in the root directory with:</p>
+            <pre className="mt-2 p-3 bg-gray-100 rounded overflow-x-auto">
+              VITE_SUPABASE_URL=your-supabase-project-url{"\n"}
+              VITE_SUPABASE_ANON_KEY=your-supabase-anon-key
+            </pre>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return <AuthContext.Provider value={authValue}>{children}</AuthContext.Provider>;
 }
