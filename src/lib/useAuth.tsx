@@ -1,3 +1,4 @@
+
 import { createContext, useContext, useState, useEffect } from "react";
 import { createClient, SupabaseClient, Session, User } from "@supabase/supabase-js";
 import { toast } from "sonner";
@@ -14,10 +15,16 @@ type AuthContextType = {
 
 // Get the Supabase URL and anon key from environment variables
 const getSupabaseConfig = () => {
-  // For Vite environment variables in local development
+  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+  const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+  
+  if (!supabaseUrl || !supabaseAnonKey) {
+    console.error("Missing Supabase environment variables");
+  }
+  
   return {
-    supabaseUrl: import.meta.env.VITE_SUPABASE_URL || "",
-    supabaseAnonKey: import.meta.env.VITE_SUPABASE_ANON_KEY || ""
+    supabaseUrl: supabaseUrl || "",
+    supabaseAnonKey: supabaseAnonKey || ""
   };
 };
 
