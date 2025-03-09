@@ -6,18 +6,23 @@ export const LabelService = {
   addLabel: async (label: Label, userId: string) => {
     return await supabase
       .from('labels')
-      .insert([{ 
+      .insert({ 
         id: label.id,
         name: label.name,
         color: label.color,
         user_id: userId
-      }]);
+      });
   },
 
   updateLabel: async (id: string, data: Partial<Label>) => {
+    const supabaseData: Record<string, any> = {};
+    
+    if (data.name !== undefined) supabaseData.name = data.name;
+    if (data.color !== undefined) supabaseData.color = data.color;
+    
     return await supabase
       .from('labels')
-      .update(data)
+      .update(supabaseData)
       .eq('id', id);
   },
 
