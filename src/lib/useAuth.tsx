@@ -13,6 +13,9 @@ type AuthContextType = {
   signOut: () => Promise<void>;
 };
 
+// Create the AuthContext
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
 // Get the Supabase URL and anon key from environment variables
 const getSupabaseConfig = () => {
   const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
@@ -152,6 +155,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
               VITE_SUPABASE_URL=your-supabase-project-url{"\n"}
               VITE_SUPABASE_ANON_KEY=your-supabase-anon-key
             </pre>
+            <p className="mt-2 text-xs text-gray-600">
+              <strong>Important:</strong> The <code>.env</code> file should be added to <code>.gitignore</code> to prevent committing secrets to your repository.
+              Use <code>.env.example</code> as a template for required variables without actual values.
+            </p>
           </div>
         </div>
       </div>
