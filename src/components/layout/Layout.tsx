@@ -1,6 +1,5 @@
-
 import React from "react";
-import { useTaskStore } from "@/lib/taskStore";
+import { useSyncStore } from "@/stores/syncStore";
 import { toast } from "sonner";
 
 interface LayoutProps {
@@ -9,16 +8,10 @@ interface LayoutProps {
 
 const Layout: React.FC<LayoutProps> = ({ children }) => {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-purple-100 to-purple-200 antialiased">
-      <header className="border-b border-purple-200 bg-white/70 backdrop-blur-sm sticky top-0 z-10">
-        <div className="mx-auto max-w-3xl px-4 py-3 sm:px-6 flex justify-between items-center">
-          <h1 className="text-xl font-semibold text-purple-800">Taskush</h1>
-        </div>
-      </header>
-      
-      <div className="mx-auto max-w-3xl px-4 py-6 sm:px-6 sm:py-8 md:py-10">
+    <div className="min-h-screen bg-background">
+      <main className="container mx-auto px-4 py-8">
         {children}
-      </div>
+      </main>
     </div>
   );
 };

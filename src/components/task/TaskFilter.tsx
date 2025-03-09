@@ -1,14 +1,16 @@
-
 import React from "react";
 import { cn } from "@/lib/utils";
-import { useTaskStore } from "@/lib/taskStore";
+import { useTaskStore } from "@/stores/taskStore";
 import { Button } from "@/components/ui/button";
 import { TaskStatus } from "@/types/task";
 import { Check, Trash2 } from "lucide-react";
 
 const TaskFilter: React.FC = () => {
-  const { filter, setFilter, clearCompleted, filteredTasks } = useTaskStore();
-  const completedCount = filteredTasks().filter(task => task.completed).length;
+  const filter = useTaskStore(state => state.filter);
+  const setFilter = useTaskStore(state => state.setFilter);
+  const clearCompleted = useTaskStore(state => state.clearCompleted);
+  const tasks = useTaskStore(state => state.tasks);
+  const completedCount = tasks.filter(task => task.completed).length;
   
   const filters: { value: TaskStatus; label: string }[] = [
     { value: "all", label: "All" },

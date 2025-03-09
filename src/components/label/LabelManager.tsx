@@ -1,14 +1,17 @@
-
 import React, { useState } from "react";
-import { Label } from "@/types/task";
-import { useTaskStore } from "@/lib/taskStore";
+import { Label } from "@/types/label";
+import { useLabelStore } from "@/stores/labelStore";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Plus, Edit, Trash2, X, Check, Tag } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const LabelManager: React.FC = () => {
-  const { labels, addLabel, updateLabel, deleteLabel } = useTaskStore();
+  const labels = useLabelStore(state => state.labels);
+  const addLabel = useLabelStore(state => state.addLabel);
+  const updateLabel = useLabelStore(state => state.updateLabel);
+  const deleteLabel = useLabelStore(state => state.deleteLabel);
+  
   const [isAdding, setIsAdding] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [newLabelName, setNewLabelName] = useState("");
@@ -115,7 +118,7 @@ const LabelManager: React.FC = () => {
       {/* Labels list */}
       {labels.length > 0 ? (
         <div className="space-y-2">
-          {labels.map((label) => (
+          {labels.map(label => (
             <div 
               key={label.id} 
               className={cn(

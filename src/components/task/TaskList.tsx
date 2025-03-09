@@ -1,6 +1,5 @@
-
 import React from "react";
-import { useTaskStore } from "@/lib/taskStore";
+import { useTaskStore } from "@/stores/taskStore";
 import TaskItem from "./TaskItem";
 import { ClipboardList } from "lucide-react";
 

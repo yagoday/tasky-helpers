@@ -1,11 +1,10 @@
-
 import React, { useState } from "react";
 import Layout from "@/components/layout/Layout";
 import TaskForm from "@/components/task/TaskForm";
 import TaskList from "@/components/task/TaskList";
 import TaskFilter from "@/components/task/TaskFilter";
 import LabelManager from "@/components/label/LabelManager";
-import { useTaskStore } from "@/lib/taskStore";
+import { useTaskStore } from "@/stores/taskStore";
 import { Loader2, Tag } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
@@ -21,10 +20,10 @@ const Index: React.FC = () => {
       <div className="space-y-6">
         <header className="text-center">
           <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-purple-800 transition-all animate-fade-in">
-            AI Development Tasks
+            Vibing
           </h1>
           <p className="mt-3 text-purple-600 max-w-md mx-auto animate-fade-in">
-            Track your journey to building fullstack applications with AI tools
+            Track your journey in Vibe Coding
           </p>
         </header>
 

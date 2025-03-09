@@ -1,7 +1,5 @@
-
-import React from "react";
-import { useTaskStore } from "@/lib/taskStore";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
+import { useSyncStore } from "@/stores/syncStore";
 import { useAuth } from "@/lib/useAuth";
 import AuthModal from "@/components/auth/AuthModal";
 import { Button } from "@/components/ui/button";
@@ -12,8 +10,8 @@ interface LoginGateProps {
 }
 
 const LoginGate: React.FC<LoginGateProps> = ({ children }) => {
-  const { syncWithSupabase } = useTaskStore();
-  const { user, isLoading, signOut } = useAuth();
+  const { user, isLoading } = useAuth();
+  const syncWithSupabase = useSyncStore(state => state.syncWithSupabase);
   const [showAuthModal, setShowAuthModal] = useState(false);
   
   useEffect(() => {
@@ -28,11 +26,8 @@ const LoginGate: React.FC<LoginGateProps> = ({ children }) => {
   // Show a loading state while auth is initializing
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-screen">
-        <div className="flex flex-col items-center gap-4">
-          <div className="h-8 w-8 animate-spin rounded-full border-4 border-purple-400 border-t-transparent"></div>
-          <p className="text-purple-800 font-medium">Loading your account...</p>
-        </div>
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-purple-500" />
       </div>
     );
   }
