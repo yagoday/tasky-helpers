@@ -1,7 +1,7 @@
-
 import { createContext, useContext, useState, useEffect } from "react";
 import { createClient, SupabaseClient, Session, User } from "@supabase/supabase-js";
 import { toast } from "sonner";
+import { getSupabaseConfig } from "@/utils/env";
 
 type AuthContextType = {
   supabase: SupabaseClient;
@@ -16,28 +16,12 @@ type AuthContextType = {
 // Create the AuthContext
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Get the Supabase URL and anon key from environment variables
-const getSupabaseConfig = () => {
-  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-  const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-  
-  if (!supabaseUrl || !supabaseAnonKey) {
-    console.error("Missing Supabase environment variables. Please add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY to your .env file");
-    toast.error("Supabase configuration missing. Check console for details.");
-  }
-  
-  return {
-    supabaseUrl,
-    supabaseAnonKey
-  };
-};
-
 const { supabaseUrl, supabaseAnonKey } = getSupabaseConfig();
 
 // Create a singleton instance of the Supabase client
 export const supabase = supabaseUrl && supabaseAnonKey 
   ? createClient(supabaseUrl, supabaseAnonKey)
-  : null as unknown as SupabaseClient; // This cast is to prevent TypeScript errors, but the app will show an error message
+  : null as unknown as SupabaseClient;
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
