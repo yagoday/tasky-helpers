@@ -1,4 +1,3 @@
-
 import { createContext, useContext, useState, useEffect } from "react";
 import { createClient, SupabaseClient, Session, User } from "@supabase/supabase-js";
 import { toast } from "sonner";
@@ -13,11 +12,31 @@ type AuthContextType = {
   signOut: () => Promise<void>;
 };
 
+// Get the Supabase URL and anon key from Deno.env (Edge Function) or import.meta.env (local dev)
+const getSupabaseConfig = () => {
+  // For Edge Functions environment
+  if (typeof Deno !== 'undefined') {
+    try {
+      return {
+        supabaseUrl: Deno.env.get("SUPABASE_URL") || "",
+        supabaseAnonKey: Deno.env.get("SUPABASE_ANON_KEY") || ""
+      };
+    } catch (error) {
+      console.error("Error accessing Deno.env:", error);
+    }
+  }
+  
+  // Fallback to Vite environment variables for local development
+  return {
+    supabaseUrl: import.meta.env.VITE_SUPABASE_URL || "",
+    supabaseAnonKey: import.meta.env.VITE_SUPABASE_ANON_KEY || ""
+  };
+};
+
+const { supabaseUrl, supabaseAnonKey } = getSupabaseConfig();
+
 // Create a singleton instance of the Supabase client
-export const supabase = createClient(
-  import.meta.env.VITE_SUPABASE_URL || "",
-  import.meta.env.VITE_SUPABASE_ANON_KEY || ""
-);
+export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
