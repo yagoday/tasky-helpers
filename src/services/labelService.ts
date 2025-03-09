@@ -6,12 +6,12 @@ export const LabelService = {
   addLabel: async (label: Label, userId: string) => {
     return await supabase
       .from('labels')
-      .insert({ 
+      .insert([{  // Use an array with one object
         id: label.id,
         name: label.name,
         color: label.color,
         user_id: userId
-      });
+      }]);
   },
 
   updateLabel: async (id: string, data: Partial<Label>) => {

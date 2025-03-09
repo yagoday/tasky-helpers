@@ -7,7 +7,7 @@ export const TaskService = {
     // Convert the labels array to a JSON string before sending to Supabase
     return await supabase
       .from('tasks')
-      .insert({
+      .insert([{  // Use an array with one object
         id: task.id,
         title: task.title,
         completed: task.completed,
@@ -15,7 +15,7 @@ export const TaskService = {
         created_at: task.createdAt,
         user_id: task.userId,
         labels: JSON.stringify(task.labels) // Convert labels array to string
-      });
+      }]);
   },
 
   updateTask: async (id: string, data: Partial<Task>) => {
